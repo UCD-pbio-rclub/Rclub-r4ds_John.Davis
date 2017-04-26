@@ -112,3 +112,67 @@ ggplot(data = mpg) +
 ```
 
 Turns the color scheme into a boolean of either true or false
+
+### 3.5.1 Exercises
+
+1. What happens if you facet on a continuous variable?
+
+```{r 3.5.1.1}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy)) + 
+  facet_wrap(~hwy)
+```
+
+You get a plot for each value in the continous variable
+
+2. What do the empty cells in plot with `facet_grid(drv ~ cyl)` mean? How do they relate to this plot?
+
+```{r 3.5.1.2}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = drv, y = cyl))
+```
+
+Samples which do not have the combination of faceting variable values
+
+They are the missing points in the plot where there xists another point sharing a similar x or y value
+
+3. What plots does the following code make? What does `.` do?
+
+```{r 3.5.1.3}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy)) +
+  facet_grid(drv ~ .)
+
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy)) +
+  facet_grid(. ~ cyl)
+```
+
+When the `.` comes first, the plot is fauceted by columns using the variable after `~`. When the `.` comes second, the plot is fauceted by rows using the variable before the `~`.
+
+4. Take the first faceted plot in this section:
+
+```{r 3.5.1.4}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy)) + 
+  facet_wrap(~ class, nrow = 2)
+```
+
+Allows us to look at a plot which contains only one value for a specific variable. Easier to read. Harder to compare one value vs another value. With large datasets, faceting allows you to more easily interpret your data due to less clutter.
+
+5. Read `?facet_wrap`. What does `nrow do`? What does `ncol` do? What other options control the layout of the individual panels? Why doesn’t `facet_grid()` have nrow and ncol variables.
+
+nrow and ncol determine how many rows and columns of plots to display when creating the output. `scales,shrink,labeller,as.table,switch,drop,dir,strip.position` all allow you to control the output layout. `facet_grid` creates a matrix of panels using your two variables. The number of rows and cols is automatically determined by the number of unique values in your variables.
+
+6. When using `facet_grid()` you should usually put the variable with more unique levels in the columns. Why?
+
+```{r 3.5.1.6}
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy)) +
+  facet_grid(cty ~ drv)
+ggplot(data = mpg) + 
+  geom_point(mapping = aes(x = displ, y = hwy)) +
+  facet_grid(drv ~ cty)
+```
+
+When the variable with more unique levels is in the rows, the plots become squished horizontally and are a lot harder to read.
