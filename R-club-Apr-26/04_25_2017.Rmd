@@ -73,9 +73,10 @@ color = 'blue' needs to be outside of the aes function
 
 ```{r 3.3.1.2}
 mpg
+sapply(mpg, class)
 ```
 
-Columns of type `chr` are categorical, type `int` are continous, and type `dbl` can be either depending on the contents
+Columns of class `character` and `factor` are categorical, class `integer` and `numeric` are continous.
 
 3. Map a continuous variable to `color`, `size`, and `shape`. How do these aesthetics behave differently for categorical vs. continuous variables?
 

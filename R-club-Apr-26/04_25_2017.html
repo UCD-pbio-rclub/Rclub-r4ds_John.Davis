@@ -197,7 +197,14 @@ ggplot(data = mpg) +
 ## 9          audi a4 quattro   1.8  1999     4   auto(l5)     4    16    25
 ## 10         audi a4 quattro   2.0  2008     4 manual(m6)     4    20    28
 ## # ... with 224 more rows, and 2 more variables: fl &lt;chr&gt;, class &lt;chr&gt;</code></pre>
-<p>Columns of type <code>chr</code> are categorical, type <code>int</code> are continous, and type <code>dbl</code> can be either depending on the contents</p>
+<pre class="r"><code>sapply(mpg, class)</code></pre>
+<pre><code>## manufacturer        model        displ         year          cyl 
+##  &quot;character&quot;  &quot;character&quot;    &quot;numeric&quot;    &quot;integer&quot;    &quot;integer&quot; 
+##        trans          drv          cty          hwy           fl 
+##  &quot;character&quot;  &quot;character&quot;    &quot;integer&quot;    &quot;integer&quot;  &quot;character&quot; 
+##        class 
+##  &quot;character&quot;</code></pre>
+<p>Columns of class <code>character</code> and <code>factor</code> are categorical, class <code>integer</code> and <code>numeric</code> are continous.</p>
 <ol start="3" style="list-style-type: decimal">
 <li>Map a continuous variable to <code>color</code>, <code>size</code>, and <code>shape</code>. How do these aesthetics behave differently for categorical vs. continuous variables?</li>
 </ol>
