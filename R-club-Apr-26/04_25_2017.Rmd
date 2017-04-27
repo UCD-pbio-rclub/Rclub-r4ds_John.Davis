@@ -108,8 +108,11 @@ Stroke changes the size of the border for the points on the plot
 6. What happens if you map an aesthetic to something other than a variable name, like `aes(colour = displ < 5)`?
 
 ```{r 3.3.1.6}
-ggplot(data = mpg) +
-  geom_point(mapping = aes(x = hwy, y = cyl, color = displ < 5))
+a <- ggplot(data = mpg)
+a <- a + geom_point(mapping = aes(x = hwy, y = cyl, color = displ < 5))
+a <- a + scale_colour_manual(labels = c("Big","Small"), values = c("Blue","Red"))
+a <- a + labs(color = "Type of Car")
+a
 ```
 
 Turns the color scheme into a boolean of either true or false
