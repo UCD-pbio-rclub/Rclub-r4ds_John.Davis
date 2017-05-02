@@ -206,3 +206,17 @@ ggplot(data = mpg, mapping = aes(x = cty, y = hwy)) +
 ```
 
 As city mpg goes up so does hwy mpg. Positively correlated. `coord_fixed()` is important because it keeps a constant x to y relationship along the axis which allows us to easily observe a linear relationship. `geom_abline()` adds a diagonal reference line to the plot where y = x since no parameters were given.
+
+
+
+### Bonus
+
+```
+ggplot(m_star_stats, aes(reorder(Sample_ID, value), value, fill = variable)) + 
+  geom_bar(stat = "identity") + 
+  theme(axis.text.x=element_text(angle=90, hjust=1), plot.title = element_text(hjust = 0.5)) + 
+  ggtitle("Barplot of Mapping Results") + xlab("Sample ID") +
+  ylab("Number of Reads") + labs(fill = "Type")
+```
+
+![](05_03_2017_files/Unique_Mapping_Barplot2.png)
