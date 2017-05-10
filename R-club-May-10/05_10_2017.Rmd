@@ -33,7 +33,7 @@ library(tidyverse)
     ```
     4. Departed in summer (July, August, and September)
     ```{r}
-    filter(flights, month %in% c(7,8,9))
+    filter(flights, month %in% 7:9)
     ```
     5. Arrived more than two hours late, but didn’t leave late
     ```{r}
@@ -45,7 +45,7 @@ library(tidyverse)
     ```
     7. Departed between midnight and 6am (inclusive)
     ```{r}
-    filter(flights, dep_time %in% 0:600)
+    filter(flights, dep_time %in% 0:600 | dep_time == 2400)
     ```
 
 2. Another useful dplyr filtering helper is `between()`. What does it do? Can you use it to simplify the code needed to answer the previous challenges?

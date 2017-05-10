@@ -204,7 +204,7 @@ library(tidyverse)</code></pre>
 <ol start="4" style="list-style-type: decimal">
 <li>Departed in summer (July, August, and September)</li>
 </ol>
-<pre class="r"><code>filter(flights, month %in% c(7,8,9))</code></pre>
+<pre class="r"><code>filter(flights, month %in% 7:9)</code></pre>
 <pre><code>## # A tibble: 86,326 × 19
 ##     year month   day dep_time sched_dep_time dep_delay arr_time
 ##    &lt;int&gt; &lt;int&gt; &lt;int&gt;    &lt;int&gt;          &lt;int&gt;     &lt;dbl&gt;    &lt;int&gt;
@@ -267,8 +267,8 @@ library(tidyverse)</code></pre>
 <ol start="7" style="list-style-type: decimal">
 <li>Departed between midnight and 6am (inclusive)</li>
 </ol>
-<pre class="r"><code>filter(flights, dep_time %in% 0:600)</code></pre>
-<pre><code>## # A tibble: 9,344 × 19
+<pre class="r"><code>filter(flights, dep_time %in% 0:600 | dep_time == 2400)</code></pre>
+<pre><code>## # A tibble: 9,373 × 19
 ##     year month   day dep_time sched_dep_time dep_delay arr_time
 ##    &lt;int&gt; &lt;int&gt; &lt;int&gt;    &lt;int&gt;          &lt;int&gt;     &lt;dbl&gt;    &lt;int&gt;
 ## 1   2013     1     1      517            515         2      830
@@ -281,7 +281,7 @@ library(tidyverse)</code></pre>
 ## 8   2013     1     1      557            600        -3      709
 ## 9   2013     1     1      557            600        -3      838
 ## 10  2013     1     1      558            600        -2      753
-## # ... with 9,334 more rows, and 12 more variables: sched_arr_time &lt;int&gt;,
+## # ... with 9,363 more rows, and 12 more variables: sched_arr_time &lt;int&gt;,
 ## #   arr_delay &lt;dbl&gt;, carrier &lt;chr&gt;, flight &lt;int&gt;, tailnum &lt;chr&gt;,
 ## #   origin &lt;chr&gt;, dest &lt;chr&gt;, air_time &lt;dbl&gt;, distance &lt;dbl&gt;, hour &lt;dbl&gt;,
 ## #   minute &lt;dbl&gt;, time_hour &lt;dttm&gt;</code></pre></li>
