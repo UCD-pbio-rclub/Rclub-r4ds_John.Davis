@@ -14,6 +14,7 @@ library(tidyverse)
 #install.packages("mapproj")
 library(mapproj)
 library(maps)
+library(plotly)
 ```
 
 ### 3.6.1 Exercises  
@@ -79,8 +80,8 @@ ggplot(data = mpg, mapping = aes(x = displ, y = hwy)) +
   geom_point(size = 3.5, aes(color = drv)) +
   geom_smooth(se = F, size = 1.5, aes(linetype = drv))
 
-ggplot(data = mpg, mapping = aes(x = displ, y = hwy, fill = drv)) +
-  geom_point(shape = 21, color = "white", size = 3.5, stroke = 2.5)
+ggplotly(ggplot(data = mpg, mapping = aes(x = displ, y = hwy, fill = drv)) +
+  geom_point(shape = 21, color = "white", size = 3.5, stroke = 2.5))
 ```
 
 ### 3.7.1 Exercises 
