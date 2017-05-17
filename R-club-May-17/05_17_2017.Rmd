@@ -130,4 +130,48 @@ flights %>% group_by(dest) %>%
   select(flight, dest, arr_delay, prop_delay)
 ```
 
-5. 
+5. Delays are typically temporally correlated: even once the problem that caused the initial delay has been resolved, later flights are delayed to allow earlier flights to leave. Using `lag()` explore how the delay of a flight is related to the delay of the immediately preceding flight.
+
+```{r}
+flights %>% group_by(year,month,day) %>%
+  filter(!is.na(dep_delay)) %>%
+  mutate(lag_eff = lag(dep_delay)) %>%
+  filter(!is.na(lag_eff)) %>%
+  ggplot(aes(x = dep_delay, y = lag_eff)) +
+  geom_point() +
+  geom_smooth(se = F)
+
+```
+
+6. Look at each destination. Can you find flights that are suspiciously fast? (i.e. flights that represent a potential data entry error). Compute the air time a flight relative to the shortest flight to that destination. Which flights were most delayed in the air?
+
+```{r}
+flights %>% filter(!is.na(air_time)) %>%
+  group_by(dest) %>%
+  mutate(shortest = min(air_time),faster = air_time - shortest) %>%
+  arrange(faster) %>%
+  select(dest, air_time, shortest, faster) %>%
+  arrange(desc(faster), dest)
+
+```
+
+Flights to the west coast were the most delayed. I don't know
+
+7. Find all destinations that are flown by at least two carriers. Use that information to rank the carriers.
+
+```{r}
+flights %>% group_by(dest) %>%
+  mutate(carr_count = length(unique(carrier))) %>%
+  filter(carr_count > 1 ) %>%
+  ungroup() %>%
+  group_by(carrier) %>%
+  mutate(locations = length(unique(dest))) %>%
+  arrange(desc(locations)) %>%
+  select(carrier, locations)
+```
+
+Incomplete
+
+8. For each plane, count the number of flights before the first delay of greater than 1 hour.
+
+

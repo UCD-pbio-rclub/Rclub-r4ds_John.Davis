@@ -143,10 +143,308 @@ $(document).ready(function () {
 <li>A flight is 15 minutes early 50% of the time, and 15 minutes late 50% of the time.</li>
 <li>A flight is always 10 minutes late.</li>
 <li>A flight is 30 minutes early 50% of the time, and 30 minutes late 50% of the time.</li>
-<li>99% of the time a flight is on time. 1% of the time it’s 2 hours late. Which is more important: arrival delay or departure delay?</li>
-</ul>
-Arrival delay is more important than departure delay. If a flight is delayed, it is still possible for the flight to make up time in the air. Arrival delay can cause a lot of problems though. Depending on how late a flight arrives, a person may end up missing their connecting flight o the next fight for that plane may be cancelled since the departure gate is no longer available. Would want some way to estimate the expected arrival delay based off flights travelling the same path. And the usual arrival delay relative to the departure delay.</li>
+<li>99% of the time a flight is on time. 1% of the time it’s 2 hours late.</li>
+</ul></li>
 </ol>
+<p>Which is more important: arrival delay or departure delay?</p>
+<pre><code>Arrival delay is more important than departure delay. If a flight is delayed, it is still possible for the flight to make up time in the air. Arrival delay can cause a lot of problems though. Depending on how late a flight arrives, a person may end up missing their connecting flight o the next fight for that plane may be cancelled since the departure gate is no longer available. Would want some way to estimate the expected arrival delay based off flights travelling  the same path. And the usual arrival delay relative to the departure delay.</code></pre>
+<ol start="2" style="list-style-type: decimal">
+<li>Come up with another approach that will give you the same output as <code>not_cancelled %&gt;% count(dest)</code> and <code>not_cancelled %&gt;% count(tailnum, wt = distance)</code> (without using <code>count()</code>).</li>
+</ol>
+<pre class="r"><code>not_cancelled &lt;- flights %&gt;% 
+  filter(!is.na(dep_delay), !is.na(arr_delay))
+
+not_cancelled %&gt;% group_by(dest) %&gt;%
+  summarise(n = n())</code></pre>
+<pre><code>## # A tibble: 104 × 2
+##     dest     n
+##    &lt;chr&gt; &lt;int&gt;
+## 1    ABQ   254
+## 2    ACK   264
+## 3    ALB   418
+## 4    ANC     8
+## 5    ATL 16837
+## 6    AUS  2411
+## 7    AVL   261
+## 8    BDL   412
+## 9    BGR   358
+## 10   BHM   269
+## # ... with 94 more rows</code></pre>
+<pre class="r"><code>not_cancelled%&gt;% group_by(tailnum) %&gt;%
+  summarise(n = sum(distance))</code></pre>
+<pre><code>## # A tibble: 4,037 × 2
+##    tailnum      n
+##      &lt;chr&gt;  &lt;dbl&gt;
+## 1   D942DN   3418
+## 2   N0EGMQ 239143
+## 3   N10156 109664
+## 4   N102UW  25722
+## 5   N103US  24619
+## 6   N104UW  24616
+## 7   N10575 139903
+## 8   N105UW  23618
+## 9   N107US  21677
+## 10  N108UW  32070
+## # ... with 4,027 more rows</code></pre>
+<ol start="3" style="list-style-type: decimal">
+<li>Our definition of cancelled flights <code>(is.na(dep_delay) | is.na(arr_delay) )</code> is slightly suboptimal. Why? Which is the most important column?</li>
+</ol>
+<p>arr_delay is the most important column. Having a value for arr_delay means the flight both took off and arrived at its original destination. I guess for this data set though, a flight is capable of having NA for arr_delay will still taking off and landing.</p>
+<ol start="4" style="list-style-type: decimal">
+<li>Look at the number of cancelled flights per day. Is there a pattern? Is the proportion of cancelled flights related to the average delay?</li>
+</ol>
+<pre class="r"><code>cancelled_delayed &lt;- 
+  flights %&gt;%
+  mutate(cancelled = (is.na(arr_delay) | is.na(dep_delay))) %&gt;%
+  group_by(year, month, day) %&gt;%
+  summarise(prop_cancelled = mean(cancelled),
+            avg_dep_delay = mean(dep_delay, na.rm = TRUE))
+plot(cancelled_delayed$avg_dep_delay, cancelled_delayed$prop_cancelled)</code></pre>
+<p><img src="data:image/png;base64,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" /><!-- --></p>
+<p>The longer the delay, the more likely the flight will get cancelled.</p>
+<ol start="5" style="list-style-type: decimal">
+<li>Which carrier has the worst delays? Challenge: can you disentangle the effects of bad airports vs. bad carriers? Why/why not? (Hint: think about <code>flights %&gt;% group_by(carrier, dest) %&gt;% summarise(n())</code></li>
+</ol>
+<pre class="r"><code>flights %&gt;% group_by(carrier) %&gt;%
+  summarise(worst_delay = max(dep_delay, na.rm = T)) %&gt;%
+  arrange(desc(worst_delay))</code></pre>
+<pre><code>## # A tibble: 16 × 2
+##    carrier worst_delay
+##      &lt;chr&gt;       &lt;dbl&gt;
+## 1       HA        1301
+## 2       MQ        1137
+## 3       AA        1014
+## 4       DL         960
+## 5       F9         853
+## 6       9E         747
+## 7       VX         653
+## 8       FL         602
+## 9       EV         548
+## 10      B6         502
+## 11      US         500
+## 12      UA         483
+## 13      WN         471
+## 14      YV         387
+## 15      AS         225
+## 16      OO         154</code></pre>
+<pre class="r"><code>flights %&gt;% group_by(carrier) %&gt;%
+  summarise(worst_delay = mean(dep_delay, na.rm = T)) %&gt;%
+  arrange(desc(worst_delay))</code></pre>
+<pre><code>## # A tibble: 16 × 2
+##    carrier worst_delay
+##      &lt;chr&gt;       &lt;dbl&gt;
+## 1       F9   20.215543
+## 2       EV   19.955390
+## 3       YV   18.996330
+## 4       FL   18.726075
+## 5       WN   17.711744
+## 6       9E   16.725769
+## 7       B6   13.022522
+## 8       VX   12.869421
+## 9       OO   12.586207
+## 10      UA   12.106073
+## 11      MQ   10.552041
+## 12      DL    9.264505
+## 13      AA    8.586016
+## 14      AS    5.804775
+## 15      HA    4.900585
+## 16      US    3.782418</code></pre>
+<pre class="r"><code>flights %&gt;% group_by(carrier, dest) %&gt;%
+  summarise(worst_delay = max(dep_delay, na.rm = T)) %&gt;%
+  arrange(desc(worst_delay))</code></pre>
+<pre><code>## Source: local data frame [314 x 3]
+## Groups: carrier [16]
+## 
+##    carrier  dest worst_delay
+##      &lt;chr&gt; &lt;chr&gt;       &lt;dbl&gt;
+## 1       HA   HNL        1301
+## 2       MQ   CMH        1137
+## 3       MQ   ORD        1126
+## 4       AA   SFO        1014
+## 5       MQ   CVG        1005
+## 6       DL   TPA         960
+## 7       DL   MSP         911
+## 8       DL   PDX         899
+## 9       DL   ATL         898
+## 10      AA   MIA         896
+## # ... with 304 more rows</code></pre>
+<p>Hawaiian Airlines had the worst delay in 2013. While Frontier Airlines had the worst avg delay.</p>
+<ol start="6" style="list-style-type: decimal">
+<li>What does the <code>sort</code> argument to <code>count()</code> do. When might you use it?</li>
+</ol>
+<pre class="r"><code>not_cancelled %&gt;%
+  count(tailnum)</code></pre>
+<pre><code>## # A tibble: 4,037 × 2
+##    tailnum     n
+##      &lt;chr&gt; &lt;int&gt;
+## 1   D942DN     4
+## 2   N0EGMQ   352
+## 3   N10156   145
+## 4   N102UW    48
+## 5   N103US    46
+## 6   N104UW    46
+## 7   N10575   269
+## 8   N105UW    45
+## 9   N107US    41
+## 10  N108UW    60
+## # ... with 4,027 more rows</code></pre>
+<pre class="r"><code>not_cancelled %&gt;%
+  count(tailnum, sort = T)</code></pre>
+<pre><code>## # A tibble: 4,037 × 2
+##    tailnum     n
+##      &lt;chr&gt; &lt;int&gt;
+## 1   N725MQ   544
+## 2   N722MQ   485
+## 3   N723MQ   475
+## 4   N711MQ   462
+## 5   N713MQ   449
+## 6   N258JB   420
+## 7   N353JB   403
+## 8   N298JB   402
+## 9   N351JB   391
+## 10  N328AA   389
+## # ... with 4,027 more rows</code></pre>
+<p>If sort = T, will sort output of n in descending order. Faster than piping the output to arrange.</p>
+<div id="exercises-1" class="section level3">
+<h3>5.7.1 Exercises</h3>
+<ol style="list-style-type: decimal">
+<li>Refer back to the lists of useful mutate and filtering functions. Describe how each operation changes when you combine it with grouping.</li>
+</ol>
+<p>When working with grouping, the functions will operate independantly on each individual group rather than operating on the whole data frame at once.</p>
+<ol start="2" style="list-style-type: decimal">
+<li>Which plane (<code>tailnum</code>) has the worst on-time record?</li>
+</ol>
+<pre class="r"><code>flights %&gt;% group_by(tailnum) %&gt;%
+  summarise(avg_delay = mean(arr_delay, na.rm = T)) %&gt;%
+  arrange(desc(avg_delay))</code></pre>
+<pre><code>## # A tibble: 4,044 × 2
+##    tailnum avg_delay
+##      &lt;chr&gt;     &lt;dbl&gt;
+## 1   N844MH  320.0000
+## 2   N911DA  294.0000
+## 3   N922EV  276.0000
+## 4   N587NW  264.0000
+## 5   N851NW  219.0000
+## 6   N928DN  201.0000
+## 7   N7715E  188.0000
+## 8   N654UA  185.0000
+## 9   N665MQ  174.6667
+## 10  N427SW  157.0000
+## # ... with 4,034 more rows</code></pre>
+<ol start="3" style="list-style-type: decimal">
+<li>What time of day should you fly if you want to avoid delays as much as possible?</li>
+</ol>
+<pre class="r"><code>flights %&gt;% 
+  group_by(sched_dep_time) %&gt;%
+  summarise(avg_delay = mean(arr_delay, na.rm = T)) %&gt;%
+  arrange(avg_delay) %&gt;%
+  head(n = 1)</code></pre>
+<pre><code>## # A tibble: 1 × 2
+##   sched_dep_time avg_delay
+##            &lt;int&gt;     &lt;dbl&gt;
+## 1            712    -35.35</code></pre>
+<pre class="r"><code>flights %&gt;% 
+  group_by(hour) %&gt;%
+  summarise(avg_delay = mean(arr_delay, na.rm = T)) %&gt;%
+  arrange(avg_delay) %&gt;%
+  head(n = 1)</code></pre>
+<pre><code>## # A tibble: 1 × 2
+##    hour avg_delay
+##   &lt;dbl&gt;     &lt;dbl&gt;
+## 1     7 -5.304472</code></pre>
+<p>Flights scheduled for 7:12 AM have on average the least amount of delays. Flights at 7 overall have the least amount of delays.</p>
+<ol start="4" style="list-style-type: decimal">
+<li>For each destination, compute the total minutes of delay. For each, flight, compute the proportion of the total delay for its destination.</li>
+</ol>
+<pre class="r"><code>flights %&gt;% group_by(dest) %&gt;%
+  mutate(total_delay = sum(arr_delay, na.rm = T), prop_delay = arr_delay/total_delay) %&gt;%
+  select(flight, dest, arr_delay, prop_delay)</code></pre>
+<pre><code>## Source: local data frame [336,776 x 4]
+## Groups: dest [105]
+## 
+##    flight  dest arr_delay    prop_delay
+##     &lt;int&gt; &lt;chr&gt;     &lt;dbl&gt;         &lt;dbl&gt;
+## 1    1545   IAH        11  3.661053e-04
+## 2    1714   IAH        20  6.656460e-04
+## 3    1141   MIA        33  9.518316e-03
+## 4     725   BQN       -18 -2.458345e-03
+## 5     461   ATL       -25 -1.313991e-04
+## 6    1696   ORD        12  1.232640e-04
+## 7     507   FLL        19  1.976017e-04
+## 8    5708   IAD       -14 -1.875896e-04
+## 9      79   MCO        -8 -1.050075e-04
+## 10    301   ORD         8  8.217602e-05
+## # ... with 336,766 more rows</code></pre>
+<ol start="5" style="list-style-type: decimal">
+<li>Delays are typically temporally correlated: even once the problem that caused the initial delay has been resolved, later flights are delayed to allow earlier flights to leave. Using <code>lag()</code> explore how the delay of a flight is related to the delay of the immediately preceding flight.</li>
+</ol>
+<pre class="r"><code>flights %&gt;% group_by(year,month,day) %&gt;%
+  filter(!is.na(dep_delay)) %&gt;%
+  mutate(lag_eff = lag(dep_delay)) %&gt;%
+  filter(!is.na(lag_eff)) %&gt;%
+  ggplot(aes(x = dep_delay, y = lag_eff)) +
+  geom_point() +
+  geom_smooth(se = F)</code></pre>
+<pre><code>## `geom_smooth()` using method = 'gam'</code></pre>
+<p><img src="data:image/png;base64,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" /><!-- --></p>
+<ol start="6" style="list-style-type: decimal">
+<li>Look at each destination. Can you find flights that are suspiciously fast? (i.e. flights that represent a potential data entry error). Compute the air time a flight relative to the shortest flight to that destination. Which flights were most delayed in the air?</li>
+</ol>
+<pre class="r"><code>flights %&gt;% filter(!is.na(air_time)) %&gt;%
+  group_by(dest) %&gt;%
+  mutate(shortest = min(air_time),faster = air_time - shortest) %&gt;%
+  arrange(faster) %&gt;%
+  select(dest, air_time, shortest, faster) %&gt;%
+  arrange(desc(faster), dest)</code></pre>
+<pre><code>## Source: local data frame [327,346 x 4]
+## Groups: dest [104]
+## 
+##     dest air_time shortest faster
+##    &lt;chr&gt;    &lt;dbl&gt;    &lt;dbl&gt;  &lt;dbl&gt;
+## 1    SFO      490      295    195
+## 2    LAX      440      275    165
+## 3    EGE      382      219    163
+## 4    DEN      331      182    149
+## 5    LAX      422      275    147
+## 6    LAS      399      256    143
+## 7    SFO      438      295    143
+## 8    SAN      413      279    134
+## 9    HNL      695      562    133
+## 10   SFO      426      295    131
+## # ... with 327,336 more rows</code></pre>
+<p>Flights to the west coast were the most delayed. I don’t know</p>
+<ol start="7" style="list-style-type: decimal">
+<li>Find all destinations that are flown by at least two carriers. Use that information to rank the carriers.</li>
+</ol>
+<pre class="r"><code>flights %&gt;% group_by(dest) %&gt;%
+  mutate(carr_count = length(unique(carrier))) %&gt;%
+  filter(carr_count &gt; 1 ) %&gt;%
+  ungroup() %&gt;%
+  group_by(carrier) %&gt;%
+  mutate(locations = length(unique(dest))) %&gt;%
+  arrange(desc(locations)) %&gt;%
+  select(carrier, locations)</code></pre>
+<pre><code>## Source: local data frame [325,397 x 2]
+## Groups: carrier [16]
+## 
+##    carrier locations
+##      &lt;chr&gt;     &lt;int&gt;
+## 1       EV        51
+## 2       EV        51
+## 3       EV        51
+## 4       EV        51
+## 5       EV        51
+## 6       EV        51
+## 7       EV        51
+## 8       EV        51
+## 9       EV        51
+## 10      EV        51
+## # ... with 325,387 more rows</code></pre>
+<p>Incomplete</p>
+<ol start="8" style="list-style-type: decimal">
+<li>For each plane, count the number of flights before the first delay of greater than 1 hour.</li>
+</ol>
+</div>
 </div>
 
 
