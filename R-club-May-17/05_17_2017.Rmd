@@ -1,0 +1,133 @@
+---
+title: "05_17_2017"
+author: "John D."
+date: "May 16, 2017"
+output: 
+  html_document: 
+    keep_md: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(nycflights13)
+```
+
+## 5.6.7 Exercises
+
+1. Brainstorm at least 5 different ways to assess the typical delay characteristics of a group of flights. Consider the following scenarios:
+    * A flight is 15 minutes early 50% of the time, and 15 minutes late 50% of the time.
+    * A flight is always 10 minutes late.
+    * A flight is 30 minutes early 50% of the time, and 30 minutes late 50% of the time.
+    * 99% of the time a flight is on time. 1% of the time it’s 2 hours late.
+    
+  Which is more important: arrival delay or departure delay?
+  
+    Arrival delay is more important than departure delay. If a flight is delayed, it is still possible for the flight to make up time in the air. Arrival delay can cause a lot of problems though. Depending on how late a flight arrives, a person may end up missing their connecting flight o the next fight for that plane may be cancelled since the departure gate is no longer available. Would want some way to estimate the expected arrival delay based off flights travelling  the same path. And the usual arrival delay relative to the departure delay.
+  
+2. Come up with another approach that will give you the same output as `not_cancelled %>% count(dest)` and `not_cancelled %>% count(tailnum, wt = distance)` (without using `count()`).
+
+```{r}
+not_cancelled <- flights %>% 
+  filter(!is.na(dep_delay), !is.na(arr_delay))
+
+not_cancelled %>% group_by(dest) %>%
+  summarise(n = n())
+
+not_cancelled%>% group_by(tailnum) %>%
+  summarise(n = sum(distance))
+```
+
+3. Our definition of cancelled flights `(is.na(dep_delay) | is.na(arr_delay) )` is slightly suboptimal. Why? Which is the most important column?
+
+arr_delay is the most important column. Having a value for arr_delay means the flight both took off and arrived at its original destination.
+I guess for this data set though, a flight is capable of having NA for arr_delay will still taking off and landing.
+
+4. Look at the number of cancelled flights per day. Is there a pattern? Is the proportion of cancelled flights related to the average delay?
+
+```{r}
+cancelled_delayed <- 
+  flights %>%
+  mutate(cancelled = (is.na(arr_delay) | is.na(dep_delay))) %>%
+  group_by(year, month, day) %>%
+  summarise(prop_cancelled = mean(cancelled),
+            avg_dep_delay = mean(dep_delay, na.rm = TRUE))
+plot(cancelled_delayed$avg_dep_delay, cancelled_delayed$prop_cancelled)
+```
+
+The longer the delay, the more likely the flight will get cancelled.
+
+5. Which carrier has the worst delays? Challenge: can you disentangle the effects of bad airports vs. bad carriers? Why/why not? (Hint: think about `flights %>% group_by(carrier, dest) %>% summarise(n())`
+
+```{r}
+flights %>% group_by(carrier) %>%
+  summarise(worst_delay = max(dep_delay, na.rm = T)) %>%
+  arrange(desc(worst_delay))
+
+flights %>% group_by(carrier) %>%
+  summarise(worst_delay = mean(dep_delay, na.rm = T)) %>%
+  arrange(desc(worst_delay))
+
+flights %>% group_by(carrier, dest) %>%
+  summarise(worst_delay = max(dep_delay, na.rm = T)) %>%
+  arrange(desc(worst_delay))
+```
+
+Hawaiian Airlines had the worst delay in 2013. While Frontier Airlines had the worst avg delay.
+
+6. What does the `sort` argument to `count()` do. When might you use it?
+
+```{r}
+not_cancelled %>%
+  count(tailnum)
+
+not_cancelled %>%
+  count(tailnum, sort = T)
+```
+
+If sort = T, will sort output of n in descending order. Faster than piping the output to arrange.
+
+### 5.7.1 Exercises
+
+1. Refer back to the lists of useful mutate and filtering functions. Describe how each operation changes when you combine it with grouping.
+
+When working with grouping, the functions will operate independantly on each individual group rather than operating on the whole data frame at once.
+
+2. Which plane (`tailnum`) has the worst on-time record?
+
+```{r}
+flights %>% group_by(tailnum) %>%
+  summarise(avg_delay = mean(arr_delay, na.rm = T)) %>%
+  arrange(desc(avg_delay))
+```
+
+3. What time of day should you fly if you want to avoid delays as much as possible?
+
+```{r}
+flights %>% 
+  group_by(sched_dep_time) %>%
+  summarise(avg_delay = mean(arr_delay, na.rm = T)) %>%
+  arrange(avg_delay) %>%
+  head(n = 1)
+
+flights %>% 
+  group_by(hour) %>%
+  summarise(avg_delay = mean(arr_delay, na.rm = T)) %>%
+  arrange(avg_delay) %>%
+  head(n = 1)
+```
+
+Flights scheduled for 7:12 AM have on average the least amount of delays. Flights at 7 overall have the least amount of delays.
+
+4. For each destination, compute the total minutes of delay. For each, flight, compute the proportion of the total delay for its destination.
+
+```{r}
+flights %>% group_by(dest) %>%
+  mutate(total_delay = sum(arr_delay, na.rm = T), prop_delay = arr_delay/total_delay) %>%
+  select(flight, dest, arr_delay, prop_delay)
+```
+
+5. 
