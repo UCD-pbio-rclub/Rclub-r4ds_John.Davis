@@ -178,3 +178,9 @@ Incomplete
 8. For each plane, count the number of flights before the first delay of greater than 1 hour.
 
 
+```{r}
+flights %>% group_by(tailnum, year, month, day) %>%
+  mutate(delayed = dep_delay > 60, b4d = cumsum(delayed)) %>%
+  filter(b4d < 1) %>%
+  count(sort = TRUE)
+```
