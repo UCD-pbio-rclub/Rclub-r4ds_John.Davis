@@ -358,22 +358,23 @@ plot(cancelled_delayed$avg_dep_delay, cancelled_delayed$prop_cancelled)</code></
 </ol>
 <pre class="r"><code>flights %&gt;% group_by(dest) %&gt;%
   mutate(total_delay = sum(arr_delay, na.rm = T), prop_delay = arr_delay/total_delay) %&gt;%
-  select(flight, dest, arr_delay, prop_delay)</code></pre>
-<pre><code>## Source: local data frame [336,776 x 4]
+  arrange(desc(total_delay)) %&gt;%
+  select(carrier, flight, dest, total_delay, prop_delay)</code></pre>
+<pre><code>## Source: local data frame [336,776 x 5]
 ## Groups: dest [105]
 ## 
-##    flight  dest arr_delay    prop_delay
-##     &lt;int&gt; &lt;chr&gt;     &lt;dbl&gt;         &lt;dbl&gt;
-## 1    1545   IAH        11  3.661053e-04
-## 2    1714   IAH        20  6.656460e-04
-## 3    1141   MIA        33  9.518316e-03
-## 4     725   BQN       -18 -2.458345e-03
-## 5     461   ATL       -25 -1.313991e-04
-## 6    1696   ORD        12  1.232640e-04
-## 7     507   FLL        19  1.976017e-04
-## 8    5708   IAD       -14 -1.875896e-04
-## 9      79   MCO        -8 -1.050075e-04
-## 10    301   ORD         8  8.217602e-05
+##    carrier flight  dest total_delay    prop_delay
+##      &lt;chr&gt;  &lt;int&gt; &lt;chr&gt;       &lt;dbl&gt;         &lt;dbl&gt;
+## 1       DL    461   ATL      190260 -1.313991e-04
+## 2       MQ   4650   ATL      190260  6.307159e-05
+## 3       DL   1743   ATL      190260 -4.204772e-05
+## 4       DL    575   ATL      190260 -4.730369e-05
+## 5       DL   1547   ATL      190260  2.627983e-05
+## 6       DL   2047   ATL      190260 -1.051193e-05
+## 7       DL    269   ATL      190260  0.000000e+00
+## 8       FL    346   ATL      190260  8.935141e-05
+## 9       MQ   4610   ATL      190260 -6.832755e-05
+## 10      DL   1747   ATL      190260 -1.051193e-05
 ## # ... with 336,766 more rows</code></pre>
 <ol start="5" style="list-style-type: decimal">
 <li>Delays are typically temporally correlated: even once the problem that caused the initial delay has been resolved, later flights are delayed to allow earlier flights to leave. Using <code>lag()</code> explore how the delay of a flight is related to the delay of the immediately preceding flight.</li>
@@ -421,25 +422,31 @@ plot(cancelled_delayed$avg_dep_delay, cancelled_delayed$prop_cancelled)</code></
   filter(carr_count &gt; 1 ) %&gt;%
   ungroup() %&gt;%
   group_by(carrier) %&gt;%
-  mutate(locations = length(unique(dest))) %&gt;%
-  arrange(desc(locations)) %&gt;%
-  select(carrier, locations)</code></pre>
-<pre><code>## Source: local data frame [325,397 x 2]
+  mutate(total_dests = length(unique(dest))) %&gt;%
+  select(carrier, total_dests) %&gt;%
+  unique() %&gt;%
+  arrange(desc(total_dests))</code></pre>
+<pre><code>## Source: local data frame [16 x 2]
 ## Groups: carrier [16]
 ## 
-##    carrier locations
-##      &lt;chr&gt;     &lt;int&gt;
-## 1       EV        51
-## 2       EV        51
-## 3       EV        51
-## 4       EV        51
-## 5       EV        51
-## 6       EV        51
-## 7       EV        51
-## 8       EV        51
-## 9       EV        51
-## 10      EV        51
-## # ... with 325,387 more rows</code></pre>
+##    carrier total_dests
+##      &lt;chr&gt;       &lt;int&gt;
+## 1       EV          51
+## 2       9E          48
+## 3       UA          42
+## 4       DL          39
+## 5       B6          35
+## 6       AA          19
+## 7       MQ          19
+## 8       WN          10
+## 9       US           5
+## 10      OO           5
+## 11      VX           4
+## 12      YV           3
+## 13      FL           2
+## 14      AS           1
+## 15      F9           1
+## 16      HA           1</code></pre>
 <p>Incomplete</p>
 <ol start="8" style="list-style-type: decimal">
 <li>For each plane, count the number of flights before the first delay of greater than 1 hour.</li>

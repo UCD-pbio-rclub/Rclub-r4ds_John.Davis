@@ -127,7 +127,8 @@ Flights scheduled for 7:12 AM have on average the least amount of delays. Flight
 ```{r}
 flights %>% group_by(dest) %>%
   mutate(total_delay = sum(arr_delay, na.rm = T), prop_delay = arr_delay/total_delay) %>%
-  select(flight, dest, arr_delay, prop_delay)
+  arrange(desc(total_delay)) %>%
+  select(carrier, flight, dest, total_delay, prop_delay)
 ```
 
 5. Delays are typically temporally correlated: even once the problem that caused the initial delay has been resolved, later flights are delayed to allow earlier flights to leave. Using `lag()` explore how the delay of a flight is related to the delay of the immediately preceding flight.
@@ -160,14 +161,14 @@ Flights to the west coast were the most delayed. I don't know
 7. Find all destinations that are flown by at least two carriers. Use that information to rank the carriers.
 
 ```{r}
-flights %>% group_by(dest) %>%
+a <- flights %>% group_by(dest) %>%
   mutate(carr_count = length(unique(carrier))) %>%
   filter(carr_count > 1 ) %>%
   ungroup() %>%
   group_by(carrier) %>%
-  mutate(locations = length(unique(dest))) %>%
-  arrange(desc(locations)) %>%
-  select(carrier, locations)
+  mutate(total_dests = length(unique(dest))) %>%
+  select(carrier, total_dests)
+
 ```
 
 Incomplete
