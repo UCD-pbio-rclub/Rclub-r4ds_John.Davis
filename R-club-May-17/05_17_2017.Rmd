@@ -161,13 +161,15 @@ Flights to the west coast were the most delayed. I don't know
 7. Find all destinations that are flown by at least two carriers. Use that information to rank the carriers.
 
 ```{r}
-a <- flights %>% group_by(dest) %>%
+flights %>% group_by(dest) %>%
   mutate(carr_count = length(unique(carrier))) %>%
   filter(carr_count > 1 ) %>%
   ungroup() %>%
   group_by(carrier) %>%
   mutate(total_dests = length(unique(dest))) %>%
-  select(carrier, total_dests)
+  select(carrier, total_dests) %>%
+  unique() %>%
+  arrange(desc(total_dests))
 
 ```
 
