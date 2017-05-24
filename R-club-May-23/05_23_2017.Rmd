@@ -1,0 +1,307 @@
+---
+title: "05_23_2017"
+author: "John D."
+date: "May 23, 2017"
+output: 
+  html_document: 
+    keep_md: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(reshape2)
+```
+
+# 7.3 Variation
+
+### 7.3.1 Visualising distributions
+
+```{r}
+ggplot(data = diamonds) +
+  geom_bar(mapping = aes(x = cut))
+
+diamonds %>% 
+  count(cut)
+
+ggplot(data = diamonds) +
+  geom_histogram(mapping = aes(x = carat), binwidth = 0.5)
+
+diamonds %>% 
+  count(cut_width(carat, 0.5))
+
+smaller <- diamonds %>% 
+  filter(carat < 3)
+
+ggplot(data = smaller, mapping = aes(x = carat)) +
+  geom_histogram(binwidth = 0.1)
+
+ggplot(data = smaller, mapping = aes(x = carat, colour = cut)) +
+  geom_freqpoly(binwidth = 0.1)
+```
+
+### 7.3.2 Typical values
+
+```{r}
+ggplot(data = smaller, mapping = aes(x = carat)) +
+  geom_histogram(binwidth = 0.01)
+
+ggplot(data = faithful, mapping = aes(x = eruptions)) + 
+  geom_histogram(binwidth = 0.25)
+
+```
+
+### 7.3.3 Unusual values
+
+```{r}
+ggplot(diamonds) + 
+  geom_histogram(mapping = aes(x = y), binwidth = 0.5)
+
+ggplot(diamonds) + 
+  geom_histogram(mapping = aes(x = y), binwidth = 0.5) +
+  coord_cartesian(ylim = c(0, 50))
+
+unusual <- diamonds %>% 
+  filter(y < 3 | y > 20) %>% 
+  select(price, x, y, z) %>%
+  arrange(y)
+unusual
+
+```
+
+### 7.3.4 Exercises
+
+1. Explore the distribution of each of the `x`, `y`, and `z` variables in `diamonds`. What do you learn? Think about a diamond and how you might decide which dimension is the length, width, and depth.
+```{r}
+summary(diamonds)
+smaller <- diamonds %>% select(x,y,z)
+colMeans(smaller)
+m.smaller <- melt(smaller)
+ggplot(m.smaller) + 
+  geom_histogram(aes(value)) + 
+  facet_wrap(~variable) +
+  coord_cartesian(ylim = c(0, 50))
+```
+
+Based on the distribution, I believe x and y are the width and height and z is the depth. The average of x and y are very similar which could be due to people not wanting oblong diamonds. Additionally, x and y are on average larger than z, suggesting people want diamonds that cover a lot of surface area but do not necessarily care about the depth.
+
+2. Explore the distribution of `price`. Do you discover anything unusual or surprising? (Hint: Carefully think about the binwidth and make sure you try a wide range of values.)
+
+```{r}
+smaller <- diamonds %>% select(price,cut,clarity)
+summary(smaller)
+
+p <- ggplot(smaller, aes(x = price))
+p + geom_histogram()
+p + geom_histogram(binwidth = 10)
+p + geom_histogram(binwidth = 100)
+p + geom_histogram(binwidth = 1000)
+p + geom_histogram(binwidth = 2000)
+p + geom_histogram(binwidth = 10)
+p + geom_histogram(binwidth = 10) + coord_cartesian(xlim = c(1400,1600))
+```
+
+There seems to be no diamonds priced between $1460 and $1540
+
+3. How many diamonds are 0.99 carat? How many are 1 carat? What do you think is the cause of the difference?
+
+```{r}
+diamonds %>% 
+  filter(carat == .99 | carat == 1) %>%
+  group_by(carat) %>%
+  count()
+
+```
+
+There are 1558 1 carat diamonds and 23 .99 carat diamonds. This is most likely due to people wanting their diamonds to be atleast 1 carat big. That or people like diamonds with carats that are a multiple of .25, .99 is an unusual size for a cut diamond.
+
+4. Compare and contrast `coord_cartesian()` vs `xlim()` or `ylim()` when zooming in on a histogram. What happens if you leave binwidth unset? What happens if you try and zoom so only half a bar shows?
+
+```{r}
+smaller <- diamonds %>% select(price)
+p <- ggplot(smaller, aes(x = price))
+
+p + geom_histogram(binwidth = 100) + coord_cartesian(xlim = c(0,1000))
+p + geom_histogram(binwidth = 10000) + coord_cartesian(xlim = c(0,1000))
+p + geom_histogram(binwidth = 100) + xlim(0,1000)
+
+p + geom_histogram() + coord_cartesian(xlim = c(0,1000))
+p + geom_histogram() + xlim(0,1000)
+```
+
+`xlim()` or `ylim()` will replace values outside of the range with NA and will not be included when creating the histogram and determining bin width. `coord_cartesian()` simply zooms in on the certain part of the plot without changing the bin width.
+
+# 7.4 Missing values
+
+```{r}
+diamonds2 <- diamonds %>% 
+  filter(between(y, 3, 20))
+
+diamonds2 <- diamonds %>% 
+  mutate(y = ifelse(y < 3 | y > 20, NA, y))
+
+ggplot(data = diamonds2, mapping = aes(x = x, y = y)) + 
+  geom_point()
+
+ggplot(data = diamonds2, mapping = aes(x = x, y = y)) + 
+  geom_point(na.rm = TRUE)
+
+nycflights13::flights %>% 
+  mutate(
+    cancelled = is.na(dep_time),
+    sched_hour = sched_dep_time %/% 100,
+    sched_min = sched_dep_time %% 100,
+    sched_dep_time = sched_hour + sched_min / 60
+  ) %>% 
+  ggplot(mapping = aes(sched_dep_time)) + 
+    geom_freqpoly(mapping = aes(colour = cancelled), binwidth = 1/4)
+```
+
+### 7.4.1 Exercises
+
+1. What happens to missing values in a histogram? What happens to missing values in a bar chart? Why is there a difference?
+
+```{r}
+diamonds2 <- diamonds %>% 
+  mutate(price = ifelse(price < 500 | price > 20000, NA, price))
+ggplot(data = diamonds2, mapping = aes(x = price)) + 
+  geom_histogram()
+diamonds2 <- diamonds %>% 
+  mutate(cut = ifelse(price < 500 | price > 20000, NA, as.character(cut)))
+ggplot(data = diamonds2, mapping = aes(x = cut)) + 
+  geom_bar()
+```
+
+In a histogram the NA values are removed and you are warned. In a bar plot, the NA values get their own bar. Has to do with the difference between categorical and continous variables.
+
+2. What does `na.rm = TRUE` do in `mean()` and `sum()`?
+
+```{r}
+diamonds2 <- diamonds %>% 
+  mutate(price = ifelse(price < 500 | price > 20000, NA, price))
+mean(diamonds2$price)
+mean(diamonds2$price, na.rm = T)
+sum(diamonds2$price)
+sum(diamonds2$price, na.rm = T)
+```
+
+If `na.rm` is `FALSE` an `NA` or `NaN` value in any of the arguments will cause a value of `NA` or `NaN` to be returned, otherwise `NA` and `NaN` values are ignored. `na.rm = TRUE` makes it so NAs are not included in the calculations
+
+# 7.5 Covariation
+
+```{r}
+ggplot(data = diamonds, mapping = aes(x = price)) + 
+  geom_freqpoly(mapping = aes(colour = cut), binwidth = 500)
+
+ggplot(diamonds) + 
+  geom_bar(mapping = aes(x = cut))
+
+ggplot(data = diamonds, mapping = aes(x = price, y = ..density..)) + 
+  geom_freqpoly(mapping = aes(colour = cut), binwidth = 500)
+
+ggplot(data = diamonds, mapping = aes(x = cut, y = price)) +
+  geom_boxplot()
+
+ggplot(data = mpg, mapping = aes(x = class, y = hwy)) +
+  geom_boxplot()
+ggplot(data = mpg) +
+  geom_boxplot(mapping = aes(x = reorder(class, hwy, FUN = median), y = hwy))
+ggplot(data = mpg) +
+  geom_boxplot(mapping = aes(x = reorder(class, hwy, FUN = median), y = hwy)) +
+  coord_flip()
+```
+
+### 7.5.1.1 Exercises
+
+1. Use what you’ve learned to improve the visualisation of the departure times of cancelled vs. non-cancelled flights.
+
+```{r}
+df <- nycflights13::flights %>% 
+  mutate(
+    cancelled = is.na(dep_time),
+    sched_hour = sched_dep_time %/% 100,
+    sched_min = sched_dep_time %% 100,
+    sched_dep_time = sched_hour + sched_min / 60
+  )
+
+ggplot(df, mapping = aes(sched_dep_time)) + 
+  geom_density(mapping = aes(colour = cancelled))
+ggplot(df, mapping = aes(y = sched_dep_time)) + 
+  geom_boxplot(mapping = aes(x = cancelled))
+```
+
+2. What variable in the diamonds dataset is most important for predicting the price of a diamond? How is that variable correlated with cut? Why does the combination of those two relationships lead to lower quality diamonds being more expensive?
+
+```{r}
+summary(diamonds)
+n.diamonds <- diamonds
+n.diamonds$cut <- as.integer(n.diamonds$cut)
+n.diamonds$clarity <- as.integer(n.diamonds$clarity)
+n.diamonds$color <- as.integer(n.diamonds$color)
+correlations <- cor(n.diamonds)
+correlations
+
+ggplot(diamonds, aes(cut,price)) + geom_boxplot()
+ggplot(diamonds, aes(carat,price)) + geom_point(aes(color = cut))
+```
+
+Carat is most important for for predicting the price of a diamond. As the carat increases, the price rapidly increases regardless of cut. This is what causes lower quality diamonds to be more expensive
+
+3. Install the ggstance package, and create a horizontal boxplot. How does this compare to using coord_flip()?
+
+```{r}
+#install.packages("ggstance")
+library(ggstance)
+
+ggplot(data = mpg) +
+  geom_boxplot(mapping = aes(x = reorder(class, hwy, FUN = median), y = hwy)) +
+  coord_flip()
+
+ggplot(data = mpg) +
+  geom_boxploth(mapping = aes(x = reorder(class, hwy, FUN = median), y = hwy))
+
+ggplot(data = mpg) +
+  geom_boxploth(mapping = aes(y = reorder(class, hwy, FUN = median), x = hwy))
+```
+
+Creates the same horinzontal boxplot, need to switch the x and y variables though.
+
+4. One problem with boxplots is that they were developed in an era of much smaller datasets and tend to display a prohibitively large number of “outlying values”. One approach to remedy this problem is the letter value plot. Install the lvplot package, and try using `geom_lv()` to display the distribution of price vs cut. What do you learn? How do you interpret the plots?
+
+```{r}
+#install.packages("lvplot")
+library(lvplot)
+ggplot(data = diamonds) +
+  geom_lv(aes(cut,price))
+```
+
+An extension of standard boxplots which draws k letter statistics
+
+5. Compare and contrast `geom_violin()` with a facetted `geom_histogram()`, or a coloured `geom_freqpoly()`. What are the pros and cons of each method?
+
+```{r}
+ggplot(data = diamonds) +
+  geom_violin(aes(cut,price))
+ggplot(data = diamonds) +
+  geom_histogram(aes(price)) +
+  facet_wrap(~cut)
+ggplot(data = diamonds, mapping = aes(x = price, y = ..density..)) + 
+  geom_freqpoly(mapping = aes(colour = cut), binwidth = 500)
+```
+
+A violin plot is a like a faceted histgram except all the x variables are on the same plot. a frequency plot is similar except they are all overlapping each other.
+
+6. If you have a small dataset, it’s sometimes useful to use `geom_jitter()` to see the relationship between a continuous and categorical variable. The ggbeeswarm package provides a number of methods similar to `geom_jitter()`. List them and briefly describe what each one does.
+
+```{r}
+#install.packages("ggbeeswarm")
+library(ggbeeswarm)
+qplot(class, hwy, data = ggplot2::mpg, geom='beeswarm')
+
+```
+
+geom_beeswarm creates a plot similar to a violin plot but with dots.
+The beeswarm geom is a convenient means to offset points within categories to reduce overplotting.
