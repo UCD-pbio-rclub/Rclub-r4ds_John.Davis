@@ -1,0 +1,255 @@
+---
+title: "05_31_2017"
+author: "John D."
+date: "May 30, 2017"
+output: 
+  html_document: 
+    keep_md: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+```
+
+### 7.6 Patterns and models
+
+```{r}
+ggplot(data = faithful) + 
+  geom_point(mapping = aes(x = eruptions, y = waiting))
+
+library(modelr)
+
+mod <- lm(log(price) ~ log(carat), data = diamonds)
+
+diamonds2 <- diamonds %>% 
+  add_residuals(mod) %>% 
+  mutate(resid = exp(resid))
+
+ggplot(data = diamonds2) + 
+  geom_point(mapping = aes(x = carat, y = resid))
+
+ggplot(data = diamonds2) + 
+  geom_boxplot(mapping = aes(x = cut, y = resid))
+```
+
+### 7.7 ggplot2 calls
+
+```{r}
+ggplot(data = faithful, mapping = aes(x = eruptions)) + 
+  geom_freqpoly(binwidth = 0.25)
+
+ggplot(faithful, aes(eruptions)) + 
+  geom_freqpoly(binwidth = 0.25)
+
+diamonds %>% 
+  count(cut, clarity) %>% 
+  ggplot(aes(clarity, cut, fill = n)) + 
+    geom_tile()
+```
+
+### 7.8 Learning more
+
+## 8 Workflow: projects
+
+### 8.1 What is real?
+
+### 8.2 Where does your analysis live?
+
+```{r}
+getwd()
+```
+
+### 8.3 Paths and directories
+
+### 8.4 RStudio projects
+
+```{r}
+library(tidyverse)
+
+ggplot(diamonds, aes(carat, price)) + 
+  geom_hex()
+#ggsave("diamonds.pdf")
+
+#write_csv(diamonds, "diamonds.csv")
+```
+
+### 8.5 Summary
+
+##9 Introduction
+
+## 10 Tibbles
+
+### 10.1 Introduction
+
+### 10.2 Creating tibbles
+
+```{r}
+iris
+
+as_tibble(iris)
+
+tibble(
+  x = 1:5, 
+  y = 1, 
+  z = x ^ 2 + y
+)
+
+tb <- tibble(
+  `:)` = "smile", 
+  ` ` = "space",
+  `2000` = "number"
+)
+tb
+
+tribble(
+  ~x, ~y, ~z,
+  #--|--|----
+  "a", 2, 3.6,
+  "b", 1, 8.5
+)
+```
+
+### 10.3 Tibbles vs. data.frame
+
+### 10.3.1 Printing
+
+
+```{r}
+tibble(
+  a = lubridate::now() + runif(1e3) * 86400,
+  b = lubridate::today() + runif(1e3) * 30,
+  c = 1:1e3,
+  d = runif(1e3),
+  e = sample(letters, 1e3, replace = TRUE)
+)
+
+nycflights13::flights %>% 
+  print(n = 10, width = Inf)
+
+nycflights13::flights %>% 
+  View()
+```
+
+### 10.3.2 Subsetting
+
+```{r}
+df <- tibble(
+  x = runif(5),
+  y = rnorm(5)
+)
+
+df$x
+df[["x"]]
+df[[1]]
+
+df %>% .$x
+df %>% .[["x"]]
+```
+
+### 10.4 Interacting with older code
+
+```{r}
+#class(as.data.frame(tb))
+```
+
+### 10.5 Exercises
+
+1. How can you tell if an object is a tibble? (Hint: try printing mtcars, which is a regular data frame)
+
+```{r}
+print(mtcars)
+print(as_tibble(mtcars))
+a <- mtcars
+b <- as_tibble(mtcars)
+class(a)
+class(b)
+```
+
+It says "tibble" at the top if it is actually a tibble. Also the default number or rows printed in lower with tibbles. The class of a tibble includes "tbl"and "tbl_df".
+
+2. Compare and contrast the following operations on a data.frame and equivalent tibble. What is different? Why might the default data frame behaviours cause you frustration?
+
+```{r}
+df <- data.frame(abc = 1, xyz = "a")
+df$x
+df[, "xyz"]
+df[, c("abc", "xyz")]
+
+tdf <- as_tibble(data.frame(abc = 1, xyz = "a"))
+#tdf$x
+# ^^ Will not run
+tdf[, "xyz"]
+tdf[, c("abc", "xyz")]
+```
+
+With a dataframe, it will match if the pattern is contained is at the start, but does not match for exact patterns. Can cause you to include more columns than you want when subsetting.
+
+3. If you have the name of a variable stored in an object, e.g. var <- "mpg", how can you extract the reference variable from a tibble?
+
+```{r}
+tdf
+var <- "xyz"
+tdf[var]
+tdf %>% .[var]
+```
+
+4. Practice referring to non-syntactic names in the following data frame by:
+    1.  Extracting the variable called `1`.
+    2.  Plotting a scatterplot of `1` vs `2`.
+    3. Creating a new column called 3 which is 2 divided by 1
+    4. Renaming the columns to one, two and three
+    
+```{r}
+annoying <- tibble(
+  `1` = 1:10,
+  `2` = `1` * 2 + rnorm(length(`1`))
+)
+annoying
+
+#1
+annoying$`1`
+annoying[["1"]]
+
+#2
+ggplot(annoying, aes(`1`,`2`)) + geom_point()
+
+#3
+annoying$`3` <- annoying$`2` / annoying$`1`
+annoying
+
+#4
+rename(annoying, one = `1`, two = `2`, three = `3`)
+#or
+(colnames(annoying) <- c("one","two","three"))
+```
+
+5. What does `tibble::enframe()` do? When might you use it?
+
+```{r}
+?enframe
+
+As <- c("a","a","A")
+Bs <- c("B","b","b")
+enframe(c(As,Bs))
+enframe(c(a = 5, b = 7))
+deframe(df)
+```
+
+`enframe()` converts named atomic vectors or lists to two-column data frames. For unnamed vectors, the natural sequence is used as name column. Convienient for creating tibbles quicking using vectors.
+
+6. What option controls how many additional column names are printed at the footer of a tibble?
+
+```{r}
+#options(tibble.width = Inf)
+
+# or
+
+# nycflights13::flights %>% 
+#  print(n = 10, width = Inf)
+
+```
+
