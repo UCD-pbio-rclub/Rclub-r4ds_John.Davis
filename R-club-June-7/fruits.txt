@@ -1,0 +1,3 @@
+orange|apple|banana
+32|345|13
+756|785|0

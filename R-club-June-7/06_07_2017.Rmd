@@ -1,0 +1,239 @@
+---
+title: "06_07_2017"
+author: "John D."
+date: "June 5, 2017"
+output: 
+  html_document: 
+    keep_md: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+```
+
+# 11 Data import
+
+## 11.2 Getting started
+
+```{r}
+#heights <- read_csv("data/heights.csv")
+
+read_csv("a,b,c
+1,2,3
+4,5,6")
+
+read_csv("The first line of metadata
+  The second line of metadata
+  x,y,z
+  1,2,3", skip = 2)
+
+read_csv("# A comment I want to skip
+  x,y,z
+  1,2,3", comment = "#")
+
+read_csv("1,2,3\n4,5,6", col_names = FALSE)
+
+read_csv("1,2,3\n4,5,6", col_names = c("x", "y", "z"))
+
+read_csv("a,b,c\n1,2,.", na = ".")
+```
+
+### 11.2.1 Compared to base R
+
+#### 11.2.2 Exercises
+
+1. What function would you use to read a file where fields were separated with “|”?
+
+```{r}
+read_delim("fruits.txt", "|")
+```
+
+2. Apart from `file`, `skip`, and `comment`, what other arguments do `read_csv()` and `read_tsv()` have in common?
+
+`read_csv()` and `read_tsv()` also have `col_names`, `col_types`, `locale`, `na`, `quoted_na`, `quote`, `trim_ws`, `n_max`, `guess_max`, and `progress` in common.
+
+3. What are the most important arguments to `read_fwf()`?
+
+The most important arguments are `file` and `col_positions`. `col_positions` is created using `fwf_widths()`, `fwf_empty()`, and `fwf_positions()`
+
+4. Sometimes strings in a CSV file contain commas. To prevent them from causing problems they need to be surrounded by a quoting character, like `"` or `'`. By convention, `read_csv()` assumes that the quoting character will be `"`, and if you want to change it you’ll need to use `read_delim()` instead. What arguments do you need to specify to read the following text into a data frame?
+
+```{r}
+read_delim("x,y\n1,'a,b'", ",", quote = "'")
+```
+
+5. Identify what is wrong with each of the following inline CSV files. What happens when you run the code?
+
+```{r}
+read_csv("a,b\n1,2,3\n4,5,6")
+```
+
+2 column names, but the all rows list 3 elements instead of 2.
+
+```{r}
+read_csv("a,b,c\n1,2\n1,2,3,4")
+```
+
+Header says theres 3 columns. 1st row is 1 element too short and 2nd row is 1 element too long
+
+```{r}
+read_csv("a,b\n\"1")
+```
+
+Header says theres 2 columns. 1st row is 1 element too short. Also theres an extra double quote, not sure if it's missing a mate or supposed to be its own element.
+
+```{r}
+read_csv("a,b\n1,2\na,b")
+```
+
+Technically nothing wrong, it reads exactly as expected. Not sure what person was trying to do. Maybe wanted 1 and 2 to be the headers but switched them.
+
+```{r}
+read_csv("a;b\n1;3")
+read_delim("a;b\n1;3", ";")
+```
+
+Assuming here they wanted `;` to be the delimiter.
+
+## 11.3 Parsing a vector
+
+```{r}
+str(parse_logical(c("TRUE", "FALSE", "NA")))
+str(parse_integer(c("1", "2", "3")))
+str(parse_date(c("2010-01-01", "1979-10-14")))
+parse_integer(c("1", "231", ".", "456"), na = ".")
+x <- parse_integer(c("123", "345", "abc", "123.45"))
+x
+problems(x)
+```
+
+### 11.3.1 Numbers
+
+```{r}
+parse_double("1.23")
+parse_double("1,23", locale = locale(decimal_mark = ","))
+parse_number("$100")
+parse_number("20%")
+parse_number("It cost $123.45")
+parse_number("$123,456,789")
+parse_number("123.456.789", locale = locale(grouping_mark = "."))
+parse_number("123'456'789", locale = locale(grouping_mark = "'"))
+```
+
+### 11.3.2 Strings
+
+```{r}
+charToRaw("John")
+
+x1 <- "El Ni\xf1o was particularly bad this year"
+x2 <- "\x82\xb1\x82\xf1\x82\xc9\x82\xbf\x82\xcd"
+
+x1
+x2
+
+parse_character(x1, locale = locale(encoding = "Latin1"))
+parse_character(x2, locale = locale(encoding = "Shift-JIS"))
+
+guess_encoding(charToRaw(x1))
+guess_encoding(charToRaw(x2))
+```
+
+### 11.3.3 Factors
+
+```{r}
+fruit <- c("apple", "banana")
+parse_factor(c("apple", "banana", "bananana"), levels = fruit)
+```
+
+### 11.3.4 Dates, date-times, and times
+
+```{r}
+parse_datetime("2010-10-01T2010")
+parse_datetime("20101010")
+parse_date("2010-10-01")
+library(hms)
+parse_time("01:10 am")
+parse_time("20:10:01")
+
+parse_date("01/02/15", "%m/%d/%y")
+parse_date("01/02/15", "%d/%m/%y")
+parse_date("01/02/15", "%y/%m/%d")
+parse_date("1 janvier 2015", "%d %B %Y", locale = locale("fr"))
+```
+
+#### 11.3.5 Exercises
+
+1. What are the most important arguments to locale()?
+
+`encoding()` and `decimal_mark` are the most important arguments in my opinion.
+
+2. What happens if you try and set `decimal_mark` and `grouping_mark` to the same character? What happens to the default value of `grouping_mark` when you set `decimal_mark` to “,”? What happens to the default value of `decimal_mark` when you set the `grouping_mark` to “.”?
+
+```{r}
+#parse_number("123,456,789.0", locale = locale(grouping_mark = ".", decimal_mark = "."))
+parse_number("123,456,789.0", locale = locale(decimal_mark = ","))
+parse_number("123,456,789.0", locale = locale(grouping_mark = "."))
+
+```
+
+The two must both be different. When `decimal_mark = ","`, `grouping_mark = "."`. When `grouping_mark = "."`, `decimal_mark = ","` 
+3. I didn’t discuss the `date_format` and `time_format` options to locale(). What do they do? Construct an example that shows when they might be useful.
+
+```{r}
+?parse_date
+
+parse_datetime("2010/01/01 12:00", "%Y/%m/%d %H:%M",
+  locale = locale(tz = "US/Central"))
+parse_datetime("2010/01/01 12:00", "%Y/%m/%d %H:%M",
+  locale = locale(tz = "US/Eastern"))
+
+parse_date("1 janvier 2015", "%d %B %Y")
+parse_date("1 janvier 2015", "%d %B %Y", locale = locale("fr"))
+```
+
+Useful for listing the timezones for your dates and for translating different dates.
+
+4. If you live outside the US, create a new locale object that encapsulates the settings for the types of file you read most commonly.
+
+```{r}
+locale <- locale("de")
+parse_date("10 oktober 1993", "%d %B %Y", locale = locale)
+```
+
+5.What’s the difference between `read_csv()` and `read_csv2()`
+
+`read_csv()` uses `,` as the delimiter while `read_csv2()` uses `;` as the delimiter. `;` is used as the delimiter because it is common to use `,` as the decimal separator in European countries.
+
+6. What are the most common encodings used in Europe? What are the most common encodings used in Asia? Do some googling to find out.
+
+Europe: ISO 8859-1 and ISO-LATIN-1
+Asia: Shift-JIS(Japan), GB18030(China), EUC-KR(Korea)
+
+7. Generate the correct format string to parse each of the following dates and times:
+
+```{r}
+d1 <- "January 1, 2010"
+parse_date(d1, "%B %d, %Y")
+
+d2 <- "2015-Mar-07"
+parse_date(d2, "%Y-%b-%d")
+
+d3 <- "06-Jun-2017"
+parse_date(d3, "%d-%b-%Y")
+
+d4 <- c("August 19 (2015)", "July 1 (2015)")
+parse_date(d4, "%B %d %.%Y%.")
+
+d5 <- "12/30/14" # Dec 30, 2014
+parse_date(d5, "%m/%d/%y")
+
+t1 <- "1705"
+parse_time(t1, "%H%M")
+
+t2 <- "11:15:10.12 PM"
+parse_time(t2, "%I:%M:%OS %p")
+```
