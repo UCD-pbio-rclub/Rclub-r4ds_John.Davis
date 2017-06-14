@@ -763,6 +763,39 @@ chunks</code></pre>
 ##  9       I      II
 ## 10       J      JJ
 ## # ... with 16 more rows</code></pre>
+<pre class="r"><code>trinity_names &lt;- read_table2(&quot;top_transcripts.txt&quot;, col_names = F)</code></pre>
+<pre><code>## Parsed with column specification:
+## cols(
+##   X1 = col_character()
+## )</code></pre>
+<pre class="r"><code>head(trinity_names)</code></pre>
+<pre><code>## # A tibble: 6 x 1
+##                         X1
+##                      &lt;chr&gt;
+## 1 TRINITY_DN21262_c0_g1_i2
+## 2 TRINITY_DN59790_c0_g1_i1
+## 3 TRINITY_DN15353_c0_g2_i1
+## 4 TRINITY_DN13576_c0_g1_i1
+## 5 TRINITY_DN67795_c0_g1_i1
+## 6 TRINITY_DN32850_c0_g3_i1</code></pre>
+<pre class="r"><code>trinity_names %&gt;%
+  extract(X1, 
+          c(&quot;Cluster&quot;,&quot;Gene&quot;,&quot;Isoform&quot;),
+          &quot;([^_]+_[^_]+_[^_]+)_([^_]+)_(.*)&quot;)</code></pre>
+<pre><code>## # A tibble: 1,000 x 3
+##               Cluster  Gene Isoform
+##  *              &lt;chr&gt; &lt;chr&gt;   &lt;chr&gt;
+##  1 TRINITY_DN21262_c0    g1      i2
+##  2 TRINITY_DN59790_c0    g1      i1
+##  3 TRINITY_DN15353_c0    g2      i1
+##  4 TRINITY_DN13576_c0    g1      i1
+##  5 TRINITY_DN67795_c0    g1      i1
+##  6 TRINITY_DN32850_c0    g3      i1
+##  7 TRINITY_DN27882_c0    g1      i1
+##  8 TRINITY_DN16096_c0    g1      i1
+##  9 TRINITY_DN29005_c0    g1      i1
+## 10 TRINITY_DN32896_c0    g2      i6
+## # ... with 990 more rows</code></pre>
 <p>Given a regular expression with capturing groups, <code>extract()</code> turns each group into a new column. If the groups don’t match, or the input is NA, the output will be NA. Separate has many options because there are many ways to separate a column and to numerous separate columns. Unite on the otherhand take numerous separate columns and combines them into one. Separate is one to many and Unite is many to one.</p>
 </div>
 </div>

@@ -292,5 +292,12 @@ chunks %>%
   extract(x, c("Set 1","Set 2","Set 3"), "(.)(.)(.)")
 chunks %>%
   extract(x, c("Set 1","Set 2"), "(.)(..)")
+
+trinity_names <- read_table2("top_transcripts.txt", col_names = F)
+head(trinity_names)
+trinity_names %>%
+  extract(X1, 
+          c("Cluster","Gene","Isoform"),
+          "([^_]+_[^_]+_[^_]+)_([^_]+)_(.*)")
 ```
 Given a regular expression with capturing groups, `extract()` turns each group into a new column. If the groups don't match, or the input is NA, the output will be NA. Separate has many options because there are many ways to separate a column and to numerous separate columns. Unite on the otherhand take numerous separate columns and combines them into one. Separate is one to many and Unite is many to one.
