@@ -1,0 +1,293 @@
+---
+title: "06_14_2017"
+author: "John D."
+date: "June 9, 2017"
+output: 
+  html_document: 
+    keep_md: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, error = TRUE)
+```
+
+# 12 Tidy data
+
+## 12.1 Introduction
+
+```{r}
+library(tidyverse)
+```
+
+## 12.2 Tidy data
+
+```{r}
+table1
+table2
+table3
+table4a
+table4b
+```
+
+### 12.2.1 Exercises
+
+1. Using prose, describe how the variables and observations are organised in each of the sample tables
+```{r}
+table1
+```
+The correct way
+
+```{r}
+table2
+```
+For some reason put populat and case into the same column
+
+```{r}
+table3
+```
+Removed cases and population and instead created a new column called rate which is just case/population
+
+```{r}
+table4a
+```
+Removed the population column and each year is the number of cases
+
+```{r}
+table4b
+```
+
+Removed the cases column and each year is the population
+
+2. Compute the `rate` for `table2`, and `table4a` + `table4b`. You will need to perform four operations
+
+```{r}
+tb2_cases <- filter(table2, type == "cases")[["count"]]
+tb2_country <- filter(table2, type == "cases")[["country"]]
+tb2_year <- filter(table2, type == "cases")[["year"]]
+tb2_population <- filter(table2, type == "population")[["count"]]
+table2_clean <- tibble(country = tb2_country,
+       year = tb2_year,
+       rate = tb2_cases / tb2_population *100000)
+table2_clean
+
+table4c <- table4a %>%
+  select(country) %>%
+  mutate(`1999` = table4a$`1999`/table4b$`1999`*10000, `2000` = table4a$`2000`/table4b$`2000`*10000)
+table4c
+
+```
+
+3. Recreate the plot showing change in cases over time using `table2` instead of `table1`. What do you need to do first?
+
+```{r}
+library(ggplot2)
+
+table2 %>% filter(type == "cases") %>%
+  ggplot(aes(year, cases)) + 
+    geom_line(aes(group = country), colour = "grey50") + 
+    geom_point(aes(colour = country))
+```
+
+## 12.3 Spreading and gathering
+
+### 12.3.1 Gathering
+
+```{r}
+table4a
+
+table4a %>% 
+  gather(`1999`, `2000`, key = "year", value = "cases")
+
+table4b %>% 
+  gather(`1999`, `2000`, key = "year", value = "population")
+
+tidy4a <- table4a %>% 
+  gather(`1999`, `2000`, key = "year", value = "cases")
+
+tidy4b <- table4b %>% 
+  gather(`1999`, `2000`, key = "year", value = "population")
+
+left_join(tidy4a, tidy4b)
+```
+
+### 12.3.2 Spreading
+
+```{r}
+table2
+spread(table2, key = type, value = count)
+```
+
+### 12.3.3 Exercises
+
+1. Why are `gather()` and `spread()` not perfectly symmetrical?
+Carefully consider the following example:
+
+```{r}
+stocks <- tibble(
+  year   = c(2015, 2015, 2016, 2016),
+  half  = c(   1,    2,     1,    2),
+  return = c(1.88, 0.59, 0.92, 0.17)
+)
+stocks
+stocks %>% 
+  spread(year, return) %>% 
+  gather("year", "return", `2015`:`2016`)
+```
+
+They are not symmetrical because they convert the column type when being run. Originally they were all `dbl` but after year is now a `character`.Convert will automatically run `type.convert` on the key column. This is useful if the column names are actually numeric, integer, or logical.
+
+2. Why does this code fail?
+
+```{r}
+table4a %>% 
+  gather(1999, 2000, key = "year", value = "cases")
+#> Error in combine_vars(vars, ind_list): Position must be between 0 and n
+```
+
+Didn't surround the dates with backticks. This causes the gather function to assume index positions rather than column names. Important when working with numeric column names.
+
+3. Why does spreading this tibble fail? How could you add a new column to fix the problem?
+
+```{r}
+
+people <- tribble(
+  ~name,             ~key,    ~value,
+  #-----------------|--------|------
+  "Phillip Woods",   "age",       45,
+  "Phillip Woods",   "height",   186,
+  "Phillip Woods",   "age",       50,
+  "Jessica Cordero", "age",       37,
+  "Jessica Cordero", "height",   156
+)
+spread(people, key, value)
+
+people <- tribble(
+  ~name,             ~key,    ~value, ~ID,
+  #-----------------|--------|------|-----
+  "Phillip Woods",   "age",       45, 1,
+  "Phillip Woods",   "height",   186, 1,
+  "Phillip Woods",   "age",       50, 2,
+  "Jessica Cordero", "age",       37, 3,
+  "Jessica Cordero", "height",   156, 3
+)
+people
+spread(people, key = key, value = value)
+
+
+```
+There are duplicate name and key entries in the tibble. Name and age for Phillip Woods. Need to add a new column such as individual ID
+
+4. Tidy the simple tibble below. Do you need to spread or gather it? What are the variables?
+
+```{r}
+preg <- tribble(
+  ~pregnant, ~male, ~female,
+  "yes",     NA,    10,
+  "no",      20,    12
+)
+
+gather(preg, male, female, key = "sex", value = "count") %>%
+  mutate(pregnant = pregnant == "yes")
+
+```
+
+## 12.4 Separating and uniting
+
+### 12.4.1 Separate
+
+```{r}
+table3
+table3 %>% 
+  separate(rate, into = c("cases", "population"))
+
+table3 %>% 
+  separate(rate, into = c("cases", "population"), sep = "/")
+
+table3 %>% 
+  separate(rate, into = c("cases", "population"), convert = TRUE)
+
+table3 %>% 
+  separate(year, into = c("century", "year"), sep = 2)
+```
+
+### 12.4.2 Unite
+
+```{r}
+table5
+
+table5 %>% 
+  unite(new, century, year)
+
+table5 %>% 
+  unite(new, century, year, sep = "")
+```
+
+### 12.4.3 Exercises
+
+1. What do the `extra` and `fill` arguments do in `separate()`? Experiment with the various options for the following two toy datasets.
+
+```{r}
+tibble(x = c("a,b,c", "d,e,f,g", "h,i,j")) %>% 
+  separate(x, c("one", "two", "three"))
+
+tibble(x = c("a,b,c", "d,e,f,g", "h,i,j")) %>% 
+  separate(x, c("one", "two", "three"), extra = "warn")
+
+tibble(x = c("a,b,c", "d,e,f,g", "h,i,j")) %>% 
+  separate(x, c("one", "two", "three"), extra = "drop")
+
+tibble(x = c("a,b,c", "d,e,f,g", "h,i,j")) %>% 
+  separate(x, c("one", "two", "three"), extra = "merge")
+
+tibble(x = c("a,b,c", "d,e", "f,g,i")) %>% 
+  separate(x, c("one", "two", "three"))
+
+tibble(x = c("a,b,c", "d,e", "f,g,i")) %>% 
+  separate(x, c("one", "two", "three"), fill = "warn")
+
+tibble(x = c("a,b,c", "d,e", "f,g,i")) %>% 
+  separate(x, c("one", "two", "three"), fill = "right")
+
+tibble(x = c("a,b,c", "d,e", "f,g,i")) %>% 
+  separate(x, c("one", "two", "three"), fill = "left")
+```
+
+If there are too many values at one location, extra will by default drop the extra values. Or if you set extra to "merge", it will add all the extra values to the last variable. If you are missing values, it will by default fill the variables by left to right until it runs out and begins using NA. If you set fill = "left" it will fill the variables from right to left until it runs out and begins using NA.
+
+2. Both `unite()` and `separate()` have a `remove` argument. What does it do? Why would you set it to `FALSE`?
+
+```{r}
+tibble(x = c("a,b,c", "d,e", "f,g,i")) %>% 
+  separate(x, c("one", "two", "three"))
+
+tibble(x = c("a,b,c", "d,e", "f,g,i")) %>% 
+  separate(x, c("one", "two", "three"), remove = F)
+
+table5 %>% 
+  unite(new, century, year, sep = "")
+
+table5 %>% 
+  unite(new, century, year, remove = F, sep = "")
+```
+
+It by default will remove the input columns given to the function. Sometimes you need to keep the input columns if you are using them again to create a new variable.
+
+3. Compare and contrast `separate()` and `extract()`. Why are there three variations of separation (by position, by separator, and with groups), but only one unite?
+
+?separate
+```{r}
+?separate
+?unite
+
+new_table <- table5 %>% 
+  unite(new, century, year, sep = "")
+
+new_table
+new_table %>%
+  extract(new, c("Century","Year"), "([0-9][0-9][0-9])([0-9])")
+
+chunks <- tibble(x = LETTERS)
+chunks %>%
+  extract(x, c("A's","E's","I's","O's","U's"), "(.+[^AEIOU])(.*[^AEIOU])(.*[^AEIOU])(.*[^AEIOU])(.*Z)")
+```
+Given a regular expression with capturing groups, `extract()` turns each group into a new column. If the groups don't match, or the input is NA, the output will be NA. Separate has many options because there are many ways to separate a column and to numerous separate columns. Unite on the otherhand take numerous separate columns and combines them into one. Separate is one to many and Unite is many to one.
