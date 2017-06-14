@@ -284,7 +284,7 @@ new_table <- table5 %>%
 
 new_table
 new_table %>%
-  extract(new, c("Century","Year"), "([0-9][0-9][0-9])([0-9])")
+  extract(new, c("Century","Year"), "([0-9][0-9])([0-9][0-9])")
 
 chunks <- tibble(x = LETTERS)
 chunks %>%
