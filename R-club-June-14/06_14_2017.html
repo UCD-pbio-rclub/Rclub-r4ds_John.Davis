@@ -715,22 +715,53 @@ new_table</code></pre>
 ## 4      Brazil      20    00   80488/174504898
 ## 5       China      19    99 212258/1272915272
 ## 6       China      20    00 213766/1280428583</code></pre>
-<pre class="r"><code>chunks &lt;- tibble(x = LETTERS)
-chunks %&gt;%
-  extract(x, c(&quot;A's&quot;,&quot;E's&quot;,&quot;I's&quot;,&quot;O's&quot;,&quot;U's&quot;), &quot;(.+[^AEIOU])(.*[^AEIOU])(.*[^AEIOU])(.*[^AEIOU])(.*Z)&quot;)</code></pre>
-<pre><code>## # A tibble: 26 x 5
-##    `A's` `E's` `I's` `O's` `U's`
-##  * &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt; &lt;chr&gt;
-##  1  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;
-##  2  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;
-##  3  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;
-##  4  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;
-##  5  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;
-##  6  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;
-##  7  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;
-##  8  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;
-##  9  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;
-## 10  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;  &lt;NA&gt;
+<pre class="r"><code>chunks &lt;- tibble(x = paste0(LETTERS,LETTERS,LETTERS))
+chunks</code></pre>
+<pre><code>## # A tibble: 26 x 1
+##        x
+##    &lt;chr&gt;
+##  1   AAA
+##  2   BBB
+##  3   CCC
+##  4   DDD
+##  5   EEE
+##  6   FFF
+##  7   GGG
+##  8   HHH
+##  9   III
+## 10   JJJ
+## # ... with 16 more rows</code></pre>
+<pre class="r"><code>chunks %&gt;%
+  extract(x, c(&quot;Set 1&quot;,&quot;Set 2&quot;,&quot;Set 3&quot;), &quot;(.)(.)(.)&quot;)</code></pre>
+<pre><code>## # A tibble: 26 x 3
+##    `Set 1` `Set 2` `Set 3`
+##  *   &lt;chr&gt;   &lt;chr&gt;   &lt;chr&gt;
+##  1       A       A       A
+##  2       B       B       B
+##  3       C       C       C
+##  4       D       D       D
+##  5       E       E       E
+##  6       F       F       F
+##  7       G       G       G
+##  8       H       H       H
+##  9       I       I       I
+## 10       J       J       J
+## # ... with 16 more rows</code></pre>
+<pre class="r"><code>chunks %&gt;%
+  extract(x, c(&quot;Set 1&quot;,&quot;Set 2&quot;), &quot;(.)(..)&quot;)</code></pre>
+<pre><code>## # A tibble: 26 x 2
+##    `Set 1` `Set 2`
+##  *   &lt;chr&gt;   &lt;chr&gt;
+##  1       A      AA
+##  2       B      BB
+##  3       C      CC
+##  4       D      DD
+##  5       E      EE
+##  6       F      FF
+##  7       G      GG
+##  8       H      HH
+##  9       I      II
+## 10       J      JJ
 ## # ... with 16 more rows</code></pre>
 <p>Given a regular expression with capturing groups, <code>extract()</code> turns each group into a new column. If the groups don’t match, or the input is NA, the output will be NA. Separate has many options because there are many ways to separate a column and to numerous separate columns. Unite on the otherhand take numerous separate columns and combines them into one. Separate is one to many and Unite is many to one.</p>
 </div>
