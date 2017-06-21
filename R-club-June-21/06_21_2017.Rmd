@@ -1,0 +1,267 @@
+---
+title: "06_21_2017"
+author: "John D."
+date: "June 21, 2017"
+output: 
+  html_document: 
+    keep_md: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, error = TRUE)
+library(tidyverse)
+```
+
+# 12.5 Missing values
+
+```{r}
+stocks <- tibble(
+  year   = c(2015, 2015, 2015, 2015, 2016, 2016, 2016),
+  qtr    = c(   1,    2,    3,    4,    2,    3,    4),
+  return = c(1.88, 0.59, 0.35,   NA, 0.92, 0.17, 2.66)
+)
+stocks
+
+stocks %>% 
+  spread(year, return)
+
+stocks %>% 
+  spread(year, return) %>% 
+  gather(year, return, `2015`:`2016`, na.rm = TRUE)
+
+stocks %>% 
+  complete(year, qtr)
+
+treatment <- tribble(
+  ~ person,           ~ treatment, ~response,
+  "Derrick Whitmore", 1,           7,
+  NA,                 2,           10,
+  NA,                 3,           9,
+  "Katherine Burke",  1,           4
+)
+treatment
+
+treatment %>% 
+  fill(person)
+```
+
+### 12.5.1 Exercises
+
+1. Compare and contrast the `fill` arguments to `spread()` and `complete()`
+
+```{r}
+stocks %>% 
+  spread(year, return)
+stocks %>% 
+  spread(year, return, fill = "BLANK")
+
+stocks %>% 
+  complete(year, qtr)
+stocks %>% 
+  complete(year, qtr, fill = list(return = "We Broke"))
+```
+
+Spread with fill will replace both explicit and implicit missing values with whatever you set fill equal to. Complete with fill will fill each column with a specific value for each variable. It will also replace NA with the designated value
+
+2. What does the direction argument to `fill()` do?
+
+```{r}
+treatment %>% 
+  fill(person)
+treatment %>% 
+  fill(person, .direction = "up")
+```
+
+By default fills in missing data from top to bottom with the most recent non-missing data. Can be changed to fill in missing data from bottom to top.
+
+## 12.6 Case Study
+
+```{r}
+who
+
+who1 <- who %>% 
+  gather(new_sp_m014:newrel_f65, key = "key", value = "cases", na.rm = TRUE)
+who1
+who1 %>% 
+  count(key)
+
+who2 <- who1 %>% 
+  mutate(key = stringr::str_replace(key, "newrel", "new_rel"))
+who2
+
+who3 <- who2 %>% 
+  separate(key, c("new", "type", "sexage"), sep = "_")
+who3
+
+who3 %>% 
+  count(new)
+
+who4 <- who3 %>% 
+  select(-new, -iso2, -iso3)
+who4
+
+who5 <- who4 %>% 
+  separate(sexage, c("sex", "age"), sep = 1)
+who5
+
+who %>%
+  gather(code, value, new_sp_m014:newrel_f65, na.rm = TRUE) %>% 
+  mutate(code = stringr::str_replace(code, "newrel", "new_rel")) %>%
+  separate(code, c("new", "var", "sexage")) %>% 
+  select(-new, -iso2, -iso3) %>% 
+  separate(sexage, c("sex", "age"), sep = 1)
+```
+
+### 12.6.1 Exercises
+
+1. In this case study I set `na.rm = TRUE` just to make it easier to check that we had the correct values. Is this reasonable? Think about how missing values are represented in this dataset. Are there implicit missing values? What’s the difference between an `NA` and zero?
+
+```{r}
+who %>%
+  gather(code, value, new_sp_m014:newrel_f65, na.rm = TRUE) %>%
+  dim() #76046
+
+who %>%
+  gather(code, value, new_sp_m014:newrel_f65) %>%
+  dim() #405440
+
+
+```
+
+In this case, getting rid of NA values is reasonable. NA means that they do not have data for a particular combination of variables. The missing values are implicit in this dataset. We do have situations were the number of cases is 0. Zero is an actual data point while NA indicates a lack of data rather than no cases.
+
+2. What happens if you neglect the `mutate()` step? `(mutate(key = stringr::str_replace(key, "newrel", "new_rel")))`
+
+```{r}
+who %>%
+  gather(code, value, new_sp_m014:newrel_f65, na.rm = TRUE) %>% 
+  separate(code, c("new", "var", "sexage")) %>% 
+  select(-iso2, -iso3) %>% 
+  separate(sexage, c("sex", "age"), sep = 1)
+```
+
+Although it is hard to see, by not adding an "_", our separate function fails to completely split our key into 3 separate columns. Separate splits on nonalphanumeric characters. We indicate 2 nonalphanumeric characters, but we have 2580 values which contain only 1 nonalphanumeric character.
+
+3. I claimed that `iso2` and `iso3` were redundant with country. Confirm this claim.
+
+```{r}
+who %>%
+  gather(code, value, new_sp_m014:newrel_f65, na.rm = TRUE) %>% 
+  mutate(code = stringr::str_replace(code, "newrel", "new_rel")) %>%
+  separate(code, c("new", "var", "sexage")) %>% 
+  select(-new, -iso2, -iso3) %>% 
+  separate(sexage, c("sex", "age"), sep = 1) %>%
+  dim()
+
+who %>%
+  gather(code, value, new_sp_m014:newrel_f65, na.rm = TRUE) %>% 
+  mutate(code = stringr::str_replace(code, "newrel", "new_rel")) %>%
+  separate(code, c("new", "var", "sexage")) %>% 
+  select(-new, -country, -iso3) %>% 
+  separate(sexage, c("sex", "age"), sep = 1) %>%
+  dim()
+
+who %>%
+  gather(code, value, new_sp_m014:newrel_f65, na.rm = TRUE) %>% 
+  mutate(code = stringr::str_replace(code, "newrel", "new_rel")) %>%
+  separate(code, c("new", "var", "sexage")) %>% 
+  select(-new, -iso2, -country) %>% 
+  separate(sexage, c("sex", "age"), sep = 1) %>%
+  dim()
+
+who %>%
+  mutate(Location = paste0(country,iso2,iso3,year)) %>%
+  select(Location) %>%
+  unique() %>%
+  dim()
+
+who %>%
+  select(country,year) %>%
+  unique() %>%
+  dim()
+```
+
+When combining country, iso2, iso3, and year into one variable then keep only unique values, you get 7240 rows. This the same if you count only the number of unique country,year combinations.
+
+4. For each country, year, and sex compute the total number of cases of TB. Make an informative visualisation of the data.
+
+```{r}
+who %>%
+  gather(code, value, new_sp_m014:newrel_f65, na.rm = TRUE) %>% 
+  select(country,value) %>%
+  group_by(country) %>%
+  tally(value) %>%
+  ggplot(aes(reorder(country, n),n)) +
+  geom_col() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+who %>%
+  gather(code, value, new_sp_m014:newrel_f65, na.rm = TRUE) %>% 
+  select(year,value) %>%
+  group_by(year) %>%
+  tally(value) %>%
+  mutate(year = as.character(year)) %>%
+  ggplot(aes(reorder(year, n),n, fill = year)) +
+  geom_col() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+
+who %>%
+  gather(code, value, new_sp_m014:newrel_f65, na.rm = TRUE) %>% 
+  mutate(code = stringr::str_replace(code, "newrel", "new_rel")) %>%
+  separate(code, c("new", "var", "sexage")) %>% 
+  select(-new, -iso2, -iso3) %>% 
+  separate(sexage, c("sex", "age"), sep = 1) %>%
+  select(sex,value) %>%
+  group_by(sex) %>%
+  tally(value) %>%
+  ggplot(aes(sex,n, fill = sex)) +
+  geom_col()
+  
+```
+
+# 13 Relational data
+
+## 13.1 Introduction
+
+```{r}
+library(nycflights13)
+```
+
+## 13.2 nycflights13
+
+```{r}
+airlines
+airports
+planes
+weather
+flights
+```
+
+### 13.2.1 Exercises
+
+1. Imagine you wanted to draw (approximately) the route each plane flies from its origin to its destination. What variables would you need? What tables would you need to combine?
+
+From flights need dest and origin.
+From airports need lat and long, combine faa with origin and dest from flights
+
+2. I forgot to draw the relationship between `weather` and `airports`. What is the relationship and how should it appear in the diagram?
+
+```{r}
+weather
+airports
+```
+
+Origin from weather is related to origin in flights which is related to faa from airports. Or simpler Origin from weather is related to faa from airports
+
+3. `weather` only contains information for the origin (NYC) airports. If it contained weather records for all airports in the USA, what additional relation would it define with `flights`?
+
+```{r}
+flights
+weather
+```
+
+It would define an additional relation of flight's dest with weather's origio. The arrival time information from flights and time information from weather is also possible. Most likely will cause problems due to flights that span 2 days. There is not individual dates for arrival and departure.
+
+4. We know that some days of the year are “special”, and fewer people than usual fly on them. How might you represent that data as a data frame? What would be the primary keys of that table? How would it connect to the existing tables?
+
+Separate table with the year, month, day, and number of flights. Connect that to the existing tables using the date information. Possibly origin and des information too.
