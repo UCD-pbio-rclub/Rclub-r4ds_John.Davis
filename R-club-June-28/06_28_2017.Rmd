@@ -1,0 +1,386 @@
+---
+title: "06_28_2017"
+author: "John D."
+date: "June 28, 2017"
+output: 
+  html_document: 
+    keep_md: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(nycflights13)
+library(RcppRoll)
+```
+
+## 13.3 Keys
+
+```{r}
+planes %>% 
+  count(tailnum) %>% 
+  filter(n > 1)
+
+weather %>% 
+  count(year, month, day, hour, origin) %>% 
+  filter(n > 1)
+
+flights %>% 
+  count(year, month, day, flight) %>% 
+  filter(n > 1)
+
+flights %>% 
+  count(year, month, day, tailnum) %>% 
+  filter(n > 1)
+```
+
+### 13.3.1 Exercises
+
+1. Add a surrogate key to `flights`.
+
+```{r}
+sur_flights <- flights %>%
+  mutate(surrogate = row_number()) %>%
+  select(surrogate,year:time_hour)
+sur_flights
+```
+
+2. Identify the keys in the following datasets
+
+```{r}
+#Lahman::Batting
+summary(Lahman::Batting)
+Lahman::Batting %>%
+  count(playerID,yearID,stint) %>%
+  filter(n > 1)
+
+#babynames::babynames
+summary(babynames::babynames)
+babynames::babynames %>%
+  count(year,name, sex) %>%
+  filter(nn > 1)
+
+# nasaweather::atmos
+summary(nasaweather::atmos)
+nasaweather::atmos %>%
+  count(lat,long, year, month) %>%
+  filter(n > 1)
+
+# fueleconomy::vehicles
+summary(fueleconomy::vehicles)
+head(fueleconomy::vehicles)
+fueleconomy::vehicles %>%
+  count(id) %>%
+  filter(n > 1)
+
+# ggplot2::diamonds
+summary(ggplot2::diamonds)
+ggplot2::diamonds %>%
+  count(depth,clarity,carat,color,price,cut,table,x,y,z) %>%
+  filter(n > 1)
+### Impossible exact duplicates
+surg_diamonds <- diamonds %>%
+  mutate(surrogate_key = row_number()) %>%
+  select(surrogate_key, carat:z)
+surg_diamonds
+
+## or account for duplicates
+ggplot2::diamonds %>%
+  count(depth,clarity,carat,color,price,cut,table,x,y,z) %>%
+  filter(n > 2)
+# Can't
+```
+
+3. Draw a diagram illustrating the connections between the `Batting`, `Master`, and `Salaries` tables in the Lahman package. Draw another diagram that shows the relationship between `Master`, `Managers`, `AwardsManagers`.
+
+How would you characterise the relationship between the Batting, Pitching, and Fielding tables?
+
+I'm gonna skip this one
+
+## 13.4 Mutating joins
+
+```{r}
+flights2 <- flights %>% 
+  select(year:day, hour, origin, dest, tailnum, carrier)
+flights2
+
+flights2 %>%
+  select(-origin, -dest) %>% 
+  left_join(airlines, by = "carrier")
+
+flights2 %>%
+  select(-origin, -dest) %>% 
+  mutate(name = airlines$name[match(carrier, airlines$carrier)])
+
+```
+
+### 13.4.1 Understanding joins
+```{r}
+x <- tribble(
+  ~key, ~val_x,
+     1, "x1",
+     2, "x2",
+     3, "x3"
+)
+y <- tribble(
+  ~key, ~val_y,
+     1, "y1",
+     2, "y2",
+     4, "y3"
+)
+```
+
+### 13.4.2 Inner join
+
+```{r}
+x
+y
+x %>% 
+  inner_join(y, by = "key")
+```
+
+### 13.4.3 Outer joins
+
+### 13.4.4 Duplicate keys
+
+```{r}
+x <- tribble(
+  ~key, ~val_x,
+     1, "x1",
+     2, "x2",
+     2, "x3",
+     1, "x4"
+)
+y <- tribble(
+  ~key, ~val_y,
+     1, "y1",
+     2, "y2"
+)
+x
+y
+left_join(x, y, by = "key")
+
+x <- tribble(
+  ~key, ~val_x,
+     1, "x1",
+     2, "x2",
+     2, "x3",
+     3, "x4"
+)
+y <- tribble(
+  ~key, ~val_y,
+     1, "y1",
+     2, "y2",
+     2, "y3",
+     3, "y4"
+)
+
+x
+y
+left_join(x, y, by = "key")
+```
+
+### 13.4.5 Defining the key columns
+
+```{r}
+flights2 %>% 
+  left_join(weather)
+
+flights2 %>% 
+  left_join(planes, by = "tailnum")
+
+flights2 %>% 
+  left_join(airports, c("dest" = "faa"))
+
+flights2 %>% 
+  left_join(airports, c("origin" = "faa"))
+```
+
+### 13.4.6 Exercises
+
+1. Compute the average delay by destination, then join on the `airports` data frame so you can show the spatial distribution of delays. Here’s an easy way to draw a map of the United States:
+
+(Don’t worry if you don’t understand what semi_join() does — you’ll learn about it next.)
+
+You might want to use the size or colour of the points to display the average delay for each airport.
+```{r}
+flights3 <- flights %>%
+  group_by(dest) %>%
+  mutate(avg_delay = mean(arr_delay, na.rm = T)) %>%
+  select(dest,avg_delay) %>%
+  inner_join(airports, by = c(dest = "faa")) 
+
+flights3 %>%
+  ggplot(aes(lon, lat)) +
+    borders("state") +
+    geom_point(aes(color = avg_delay)) +
+    coord_quickmap()
+```
+
+2. Add the location of the origin and destination (i.e. the `lat` and `lon`) to flights.
+
+```{r}
+flights4 <- flights2 %>%
+  left_join(airports %>% select(faa,lat,lon), by = c(origin = "faa")) %>%
+  left_join(airports%>% select(faa,lat,lon), by = c(dest = "faa")) %>%
+  rename(origin.lat = lat.x ,  dest.lat = lat.y, origin.lon = lon.x, dest.lon = lon.y)
+flights4
+```
+
+3. Is there a relationship between the age of a plane and its delays?
+
+```{r}
+flights %>%
+  group_by(tailnum) %>%
+  mutate(avg_delay = mean(arr_delay, na.rm = T)) %>%
+  select(tailnum,avg_delay) %>%
+  unique() %>%
+  inner_join(planes) %>%
+  mutate(age = 2013-year) %>%
+  ggplot(aes(age,avg_delay)) +
+    geom_point()
+
+flights %>%
+  group_by(tailnum) %>%
+  mutate(avg_delay = mean(arr_delay, na.rm = T)) %>%
+  select(tailnum,avg_delay) %>%
+  unique() %>%
+  inner_join(planes) %>%
+  mutate(age = 2013-year) %>%
+  ggplot(aes(age,avg_delay)) +
+    geom_line()
+```
+
+4. What weather conditions make it more likely to see a delay?
+
+```{r}
+flights %>%
+  group_by(origin,year,month,day) %>%
+  mutate(avg_delay = mean(arr_delay, na.rm = T)) %>%
+  select(origin,avg_delay,year,month,day) %>%
+  inner_join(weather) %>%
+  arrange(-avg_delay)
+```
+
+Cold weather, high winds, and low visibility
+
+5. What happened on June 13 2013? Display the spatial pattern of delays, and then use Google to cross-reference with the weather
+
+```{r}
+flights5 <- flights %>%
+  filter(month == 6 & day == 13) %>%
+  group_by(dest) %>%
+  mutate(avg_delay = mean(arr_delay, na.rm = T)) %>%
+  select(dest,avg_delay) %>%
+  inner_join(airports, by = c(dest = "faa"))
+
+flights5 %>%
+  ggplot(aes(lon, lat)) +
+    borders("state") +
+    geom_point(aes(color = avg_delay)) +
+    coord_quickmap()
+```
+
+Something going down on east coast. Everyone on the east coast stopped to watch an Australian swim in Florida. Or more likely the June 12–13, 2013 derecho series. A widespread, long-lived, straight-line wind storm that is associated with a land-based, fast-moving group of severe thunderstorms.
+
+### 13.4.7 Other implementations
+
+## 13.5 Filtering joins
+
+```{r}
+top_dest <- flights %>%
+  count(dest, sort = TRUE) %>%
+  head(10)
+top_dest
+
+flights %>% 
+  filter(dest %in% top_dest$dest)
+
+flights %>% 
+  semi_join(top_dest)
+
+flights %>%
+  anti_join(planes, by = "tailnum") %>%
+  count(tailnum, sort = TRUE)
+```
+
+### 13.5.1 Exercises
+
+1. What does it mean for a flight to have a missing `tailnum`? What do the tail numbers that don’t have a matching record in `planes` have in common? (Hint: one variable explains ~90% of the problems.)
+
+```{r}
+flights %>%
+  anti_join(planes, by = "tailnum")
+flights %>%
+  anti_join(planes, by = "tailnum") %>%
+  count(carrier, sort = T)
+flights %>%
+  filter(carrier == "AA") %>%
+  count(tailnum)
+flights %>%
+  filter(carrier == "MQ") %>%
+  count(tailnum)
+```
+AA and MQ did not report a significant number of their tailnums
+
+2. Filter flights to only show flights with planes that have flown at least 100 flights
+
+```{r}
+enough <- flights %>%
+  group_by(tailnum) %>%
+  count(tailnum) %>%
+  filter(n >= 100)
+
+flights %>%
+  semi_join(enough, by = "tailnum")
+```
+
+3. Combine `fueleconomy::vehicles` and `fueleconomy::common` to find only the records for the most common models.
+
+```{r}
+fueleconomy::vehicles
+fueleconomy::common
+fueleconomy::vehicles %>%
+  semi_join(fueleconomy::common, by = "model")
+```
+
+4. Find the 48 hours (over the course of the whole year) that have the worst delays. Cross-reference it with the `weather data`. Can you see any patterns?
+```{r}
+delays <- flights %>%
+  group_by(month,day) %>%
+  mutate(delay = mean(arr_delay, na.rm = T)) %>%
+  select(month,day,delay) %>%
+  unique() %>%
+  arrange(month,day)
+two_day_delay <- roll_sum(delays$delay, n = 2)
+grep(max(two_day_delay), two_day_delay)
+worst <- delays[203:204,]
+worst
+inner_join(worst,weather) %>%
+  select(-delay)
+```
+July 22nd and 23rd had the worst combined delays
+
+5. What does `anti_join(flights, airports, by = c("dest" = "faa"))` tell you? What does `anti_join(airports, flights, by = c("faa" = "dest"))` tell you?
+
+```{r}
+anti_join(flights, airports, by = c("dest" = "faa"))
+anti_join(airports, flights, by = c("faa" = "dest"))
+```
+
+The first shows all the flights whose destinations are not contained in the airport data frame's faa column. The second shows all airports which have a value in the faa column which is not present in the flights dest column.
+
+6. You might expect that there’s an implicit relationship between plane and airline, because each plane is flown by a single airline. Confirm or reject this hypothesis using the tools you’ve learned above.
+
+```{r}
+flights %>%
+  select(carrier,tailnum) %>%
+  unique() %>%
+  count(tailnum) %>%
+  filter(n > 1)
+```
+
+Not true, there are at least 17 planes which were flown under 2 different airlines in 2013
