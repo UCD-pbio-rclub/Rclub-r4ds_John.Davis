@@ -252,7 +252,7 @@ str_replace_all(test, c("L" = "l", "O" = "o", "U" = "u", "D" = "d", "N" = "n", "
 3. Switch the first and last letters in words. Which of those strings are still words?
 
 ```{r}
-words[which(str_replace_all(words, "(^\\w)(.*)(\\w$)","\\3\\2\\1") == words)]
+intersect(str_replace_all(words, "(^\\w)(.*)(\\w$)","\\3\\2\\1"), words)
 ```
 
 ## 14.4.6 Splitting

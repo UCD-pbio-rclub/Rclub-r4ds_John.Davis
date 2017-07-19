@@ -308,8 +308,8 @@ head(matches)</code></pre>
 <pre><code>## [1] &quot;blue&quot; &quot;blue&quot; &quot;red&quot;  &quot;red&quot;  &quot;red&quot;  &quot;blue&quot;</code></pre>
 <pre class="r"><code>more &lt;- sentences[str_count(sentences, colour_match) &gt; 1]
 str_view_all(more, colour_match)</code></pre>
-<div id="htmlwidget-e3c061e4e56bae0f51a3" style="width:960px;height:auto;" class="str_view html-widget"></div>
-<script type="application/json" data-for="htmlwidget-e3c061e4e56bae0f51a3">{"x":{"html":"<ul>\n  <li>It is hard to erase <span class='match'>blue<\/span> or <span class='match'>red<\/span> ink.<\/li>\n  <li>The <span class='match'>green<\/span> light in the brown box flicke<span class='match'>red<\/span>.<\/li>\n  <li>The sky in the west is tinged with <span class='match'>orange<\/span> <span class='match'>red<\/span>.<\/li>\n<\/ul>"},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-7ce05ace555e41e885fe" style="width:960px;height:auto;" class="str_view html-widget"></div>
+<script type="application/json" data-for="htmlwidget-7ce05ace555e41e885fe">{"x":{"html":"<ul>\n  <li>It is hard to erase <span class='match'>blue<\/span> or <span class='match'>red<\/span> ink.<\/li>\n  <li>The <span class='match'>green<\/span> light in the brown box flicke<span class='match'>red<\/span>.<\/li>\n  <li>The sky in the west is tinged with <span class='match'>orange<\/span> <span class='match'>red<\/span>.<\/li>\n<\/ul>"},"evals":[],"jsHooks":[]}</script>
 <pre class="r"><code>str_extract(more, colour_match)</code></pre>
 <pre><code>## [1] &quot;blue&quot;   &quot;green&quot;  &quot;orange&quot;</code></pre>
 <pre class="r"><code>str_extract_all(more, colour_match)</code></pre>
@@ -717,15 +717,16 @@ str_replace_all(test, c(&quot;L&quot; = &quot;l&quot;, &quot;O&quot; = &quot;o&q
 <ol start="3" style="list-style-type: decimal">
 <li>Switch the first and last letters in words. Which of those strings are still words?</li>
 </ol>
-<pre class="r"><code>words[which(str_replace_all(words, &quot;(^\\w)(.*)(\\w$)&quot;,&quot;\\3\\2\\1&quot;) == words)]</code></pre>
+<pre class="r"><code>intersect(str_replace_all(words, &quot;(^\\w)(.*)(\\w$)&quot;,&quot;\\3\\2\\1&quot;), words)</code></pre>
 <pre><code>##  [1] &quot;a&quot;          &quot;america&quot;    &quot;area&quot;       &quot;dad&quot;        &quot;dead&quot;      
-##  [6] &quot;depend&quot;     &quot;educate&quot;    &quot;else&quot;       &quot;encourage&quot;  &quot;engine&quot;    
-## [11] &quot;europe&quot;     &quot;evidence&quot;   &quot;example&quot;    &quot;excuse&quot;     &quot;exercise&quot;  
-## [16] &quot;expense&quot;    &quot;experience&quot; &quot;eye&quot;        &quot;health&quot;     &quot;high&quot;      
-## [21] &quot;knock&quot;      &quot;level&quot;      &quot;local&quot;      &quot;nation&quot;     &quot;non&quot;       
-## [26] &quot;rather&quot;     &quot;refer&quot;      &quot;remember&quot;   &quot;serious&quot;    &quot;stairs&quot;    
-## [31] &quot;test&quot;       &quot;tonight&quot;    &quot;transport&quot;  &quot;treat&quot;      &quot;trust&quot;     
-## [36] &quot;window&quot;     &quot;yesterday&quot;</code></pre>
+##  [6] &quot;lead&quot;       &quot;read&quot;       &quot;depend&quot;     &quot;god&quot;        &quot;educate&quot;   
+## [11] &quot;else&quot;       &quot;encourage&quot;  &quot;engine&quot;     &quot;europe&quot;     &quot;evidence&quot;  
+## [16] &quot;example&quot;    &quot;excuse&quot;     &quot;exercise&quot;   &quot;expense&quot;    &quot;experience&quot;
+## [21] &quot;eye&quot;        &quot;dog&quot;        &quot;health&quot;     &quot;high&quot;       &quot;knock&quot;     
+## [26] &quot;deal&quot;       &quot;level&quot;      &quot;local&quot;      &quot;nation&quot;     &quot;on&quot;        
+## [31] &quot;non&quot;        &quot;no&quot;         &quot;rather&quot;     &quot;dear&quot;       &quot;refer&quot;     
+## [36] &quot;remember&quot;   &quot;serious&quot;    &quot;stairs&quot;     &quot;test&quot;       &quot;tonight&quot;   
+## [41] &quot;transport&quot;  &quot;treat&quot;      &quot;trust&quot;      &quot;window&quot;     &quot;yesterday&quot;</code></pre>
 </div>
 </div>
 <div id="splitting" class="section level2">
@@ -777,8 +778,8 @@ fields %&gt;% str_split(&quot;: &quot;, n = 2, simplify = TRUE)</code></pre>
 ## [3,] &quot;Age&quot;     &quot;35&quot;</code></pre>
 <pre class="r"><code>x &lt;- &quot;This is a sentence.  This is another sentence.&quot;
 str_view_all(x, boundary(&quot;word&quot;))</code></pre>
-<div id="htmlwidget-fd7630df33593785108b" style="width:960px;height:auto;" class="str_view html-widget"></div>
-<script type="application/json" data-for="htmlwidget-fd7630df33593785108b">{"x":{"html":"<ul>\n  <li><span class='match'>This<\/span> <span class='match'>is<\/span> <span class='match'>a<\/span> <span class='match'>sentence<\/span>.  <span class='match'>This<\/span> <span class='match'>is<\/span> <span class='match'>another<\/span> <span class='match'>sentence<\/span>.<\/li>\n<\/ul>"},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-119c2697fd156c433358" style="width:960px;height:auto;" class="str_view html-widget"></div>
+<script type="application/json" data-for="htmlwidget-119c2697fd156c433358">{"x":{"html":"<ul>\n  <li><span class='match'>This<\/span> <span class='match'>is<\/span> <span class='match'>a<\/span> <span class='match'>sentence<\/span>.  <span class='match'>This<\/span> <span class='match'>is<\/span> <span class='match'>another<\/span> <span class='match'>sentence<\/span>.<\/li>\n<\/ul>"},"evals":[],"jsHooks":[]}</script>
 <pre class="r"><code>str_split(x, &quot; &quot;)[[1]]</code></pre>
 <pre><code>## [1] &quot;This&quot;      &quot;is&quot;        &quot;a&quot;         &quot;sentence.&quot; &quot;&quot;          &quot;This&quot;     
 ## [7] &quot;is&quot;        &quot;another&quot;   &quot;sentence.&quot;</code></pre>
@@ -811,18 +812,18 @@ str_split(x, boundary(&quot;word&quot;))[[1]]</code></pre>
 <div id="other-types-of-pattern" class="section level1">
 <h1>14.5 Other types of pattern</h1>
 <pre class="r"><code>str_view(fruit, &quot;nana&quot;)</code></pre>
-<div id="htmlwidget-5283d61581640c8c7436" style="width:960px;height:auto;" class="str_view html-widget"></div>
-<script type="application/json" data-for="htmlwidget-5283d61581640c8c7436">{"x":{"html":"<ul>\n  <li>apple<\/li>\n  <li>apricot<\/li>\n  <li>avocado<\/li>\n  <li>ba<span class='match'>nana<\/span><\/li>\n  <li>bell pepper<\/li>\n  <li>bilberry<\/li>\n  <li>blackberry<\/li>\n  <li>blackcurrant<\/li>\n  <li>blood orange<\/li>\n  <li>blueberry<\/li>\n  <li>boysenberry<\/li>\n  <li>breadfruit<\/li>\n  <li>canary melon<\/li>\n  <li>cantaloupe<\/li>\n  <li>cherimoya<\/li>\n  <li>cherry<\/li>\n  <li>chili pepper<\/li>\n  <li>clementine<\/li>\n  <li>cloudberry<\/li>\n  <li>coconut<\/li>\n  <li>cranberry<\/li>\n  <li>cucumber<\/li>\n  <li>currant<\/li>\n  <li>damson<\/li>\n  <li>date<\/li>\n  <li>dragonfruit<\/li>\n  <li>durian<\/li>\n  <li>eggplant<\/li>\n  <li>elderberry<\/li>\n  <li>feijoa<\/li>\n  <li>fig<\/li>\n  <li>goji berry<\/li>\n  <li>gooseberry<\/li>\n  <li>grape<\/li>\n  <li>grapefruit<\/li>\n  <li>guava<\/li>\n  <li>honeydew<\/li>\n  <li>huckleberry<\/li>\n  <li>jackfruit<\/li>\n  <li>jambul<\/li>\n  <li>jujube<\/li>\n  <li>kiwi fruit<\/li>\n  <li>kumquat<\/li>\n  <li>lemon<\/li>\n  <li>lime<\/li>\n  <li>loquat<\/li>\n  <li>lychee<\/li>\n  <li>mandarine<\/li>\n  <li>mango<\/li>\n  <li>mulberry<\/li>\n  <li>nectarine<\/li>\n  <li>nut<\/li>\n  <li>olive<\/li>\n  <li>orange<\/li>\n  <li>pamelo<\/li>\n  <li>papaya<\/li>\n  <li>passionfruit<\/li>\n  <li>peach<\/li>\n  <li>pear<\/li>\n  <li>persimmon<\/li>\n  <li>physalis<\/li>\n  <li>pineapple<\/li>\n  <li>plum<\/li>\n  <li>pomegranate<\/li>\n  <li>pomelo<\/li>\n  <li>purple mangosteen<\/li>\n  <li>quince<\/li>\n  <li>raisin<\/li>\n  <li>rambutan<\/li>\n  <li>raspberry<\/li>\n  <li>redcurrant<\/li>\n  <li>rock melon<\/li>\n  <li>salal berry<\/li>\n  <li>satsuma<\/li>\n  <li>star fruit<\/li>\n  <li>strawberry<\/li>\n  <li>tamarillo<\/li>\n  <li>tangerine<\/li>\n  <li>ugli fruit<\/li>\n  <li>watermelon<\/li>\n<\/ul>"},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-e485cd933c65544a38c3" style="width:960px;height:auto;" class="str_view html-widget"></div>
+<script type="application/json" data-for="htmlwidget-e485cd933c65544a38c3">{"x":{"html":"<ul>\n  <li>apple<\/li>\n  <li>apricot<\/li>\n  <li>avocado<\/li>\n  <li>ba<span class='match'>nana<\/span><\/li>\n  <li>bell pepper<\/li>\n  <li>bilberry<\/li>\n  <li>blackberry<\/li>\n  <li>blackcurrant<\/li>\n  <li>blood orange<\/li>\n  <li>blueberry<\/li>\n  <li>boysenberry<\/li>\n  <li>breadfruit<\/li>\n  <li>canary melon<\/li>\n  <li>cantaloupe<\/li>\n  <li>cherimoya<\/li>\n  <li>cherry<\/li>\n  <li>chili pepper<\/li>\n  <li>clementine<\/li>\n  <li>cloudberry<\/li>\n  <li>coconut<\/li>\n  <li>cranberry<\/li>\n  <li>cucumber<\/li>\n  <li>currant<\/li>\n  <li>damson<\/li>\n  <li>date<\/li>\n  <li>dragonfruit<\/li>\n  <li>durian<\/li>\n  <li>eggplant<\/li>\n  <li>elderberry<\/li>\n  <li>feijoa<\/li>\n  <li>fig<\/li>\n  <li>goji berry<\/li>\n  <li>gooseberry<\/li>\n  <li>grape<\/li>\n  <li>grapefruit<\/li>\n  <li>guava<\/li>\n  <li>honeydew<\/li>\n  <li>huckleberry<\/li>\n  <li>jackfruit<\/li>\n  <li>jambul<\/li>\n  <li>jujube<\/li>\n  <li>kiwi fruit<\/li>\n  <li>kumquat<\/li>\n  <li>lemon<\/li>\n  <li>lime<\/li>\n  <li>loquat<\/li>\n  <li>lychee<\/li>\n  <li>mandarine<\/li>\n  <li>mango<\/li>\n  <li>mulberry<\/li>\n  <li>nectarine<\/li>\n  <li>nut<\/li>\n  <li>olive<\/li>\n  <li>orange<\/li>\n  <li>pamelo<\/li>\n  <li>papaya<\/li>\n  <li>passionfruit<\/li>\n  <li>peach<\/li>\n  <li>pear<\/li>\n  <li>persimmon<\/li>\n  <li>physalis<\/li>\n  <li>pineapple<\/li>\n  <li>plum<\/li>\n  <li>pomegranate<\/li>\n  <li>pomelo<\/li>\n  <li>purple mangosteen<\/li>\n  <li>quince<\/li>\n  <li>raisin<\/li>\n  <li>rambutan<\/li>\n  <li>raspberry<\/li>\n  <li>redcurrant<\/li>\n  <li>rock melon<\/li>\n  <li>salal berry<\/li>\n  <li>satsuma<\/li>\n  <li>star fruit<\/li>\n  <li>strawberry<\/li>\n  <li>tamarillo<\/li>\n  <li>tangerine<\/li>\n  <li>ugli fruit<\/li>\n  <li>watermelon<\/li>\n<\/ul>"},"evals":[],"jsHooks":[]}</script>
 <pre class="r"><code>str_view(fruit, regex(&quot;nana&quot;))</code></pre>
-<div id="htmlwidget-2f52daafc3011e222f96" style="width:960px;height:auto;" class="str_view html-widget"></div>
-<script type="application/json" data-for="htmlwidget-2f52daafc3011e222f96">{"x":{"html":"<ul>\n  <li>apple<\/li>\n  <li>apricot<\/li>\n  <li>avocado<\/li>\n  <li>ba<span class='match'>nana<\/span><\/li>\n  <li>bell pepper<\/li>\n  <li>bilberry<\/li>\n  <li>blackberry<\/li>\n  <li>blackcurrant<\/li>\n  <li>blood orange<\/li>\n  <li>blueberry<\/li>\n  <li>boysenberry<\/li>\n  <li>breadfruit<\/li>\n  <li>canary melon<\/li>\n  <li>cantaloupe<\/li>\n  <li>cherimoya<\/li>\n  <li>cherry<\/li>\n  <li>chili pepper<\/li>\n  <li>clementine<\/li>\n  <li>cloudberry<\/li>\n  <li>coconut<\/li>\n  <li>cranberry<\/li>\n  <li>cucumber<\/li>\n  <li>currant<\/li>\n  <li>damson<\/li>\n  <li>date<\/li>\n  <li>dragonfruit<\/li>\n  <li>durian<\/li>\n  <li>eggplant<\/li>\n  <li>elderberry<\/li>\n  <li>feijoa<\/li>\n  <li>fig<\/li>\n  <li>goji berry<\/li>\n  <li>gooseberry<\/li>\n  <li>grape<\/li>\n  <li>grapefruit<\/li>\n  <li>guava<\/li>\n  <li>honeydew<\/li>\n  <li>huckleberry<\/li>\n  <li>jackfruit<\/li>\n  <li>jambul<\/li>\n  <li>jujube<\/li>\n  <li>kiwi fruit<\/li>\n  <li>kumquat<\/li>\n  <li>lemon<\/li>\n  <li>lime<\/li>\n  <li>loquat<\/li>\n  <li>lychee<\/li>\n  <li>mandarine<\/li>\n  <li>mango<\/li>\n  <li>mulberry<\/li>\n  <li>nectarine<\/li>\n  <li>nut<\/li>\n  <li>olive<\/li>\n  <li>orange<\/li>\n  <li>pamelo<\/li>\n  <li>papaya<\/li>\n  <li>passionfruit<\/li>\n  <li>peach<\/li>\n  <li>pear<\/li>\n  <li>persimmon<\/li>\n  <li>physalis<\/li>\n  <li>pineapple<\/li>\n  <li>plum<\/li>\n  <li>pomegranate<\/li>\n  <li>pomelo<\/li>\n  <li>purple mangosteen<\/li>\n  <li>quince<\/li>\n  <li>raisin<\/li>\n  <li>rambutan<\/li>\n  <li>raspberry<\/li>\n  <li>redcurrant<\/li>\n  <li>rock melon<\/li>\n  <li>salal berry<\/li>\n  <li>satsuma<\/li>\n  <li>star fruit<\/li>\n  <li>strawberry<\/li>\n  <li>tamarillo<\/li>\n  <li>tangerine<\/li>\n  <li>ugli fruit<\/li>\n  <li>watermelon<\/li>\n<\/ul>"},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-fbd00b9700a478776661" style="width:960px;height:auto;" class="str_view html-widget"></div>
+<script type="application/json" data-for="htmlwidget-fbd00b9700a478776661">{"x":{"html":"<ul>\n  <li>apple<\/li>\n  <li>apricot<\/li>\n  <li>avocado<\/li>\n  <li>ba<span class='match'>nana<\/span><\/li>\n  <li>bell pepper<\/li>\n  <li>bilberry<\/li>\n  <li>blackberry<\/li>\n  <li>blackcurrant<\/li>\n  <li>blood orange<\/li>\n  <li>blueberry<\/li>\n  <li>boysenberry<\/li>\n  <li>breadfruit<\/li>\n  <li>canary melon<\/li>\n  <li>cantaloupe<\/li>\n  <li>cherimoya<\/li>\n  <li>cherry<\/li>\n  <li>chili pepper<\/li>\n  <li>clementine<\/li>\n  <li>cloudberry<\/li>\n  <li>coconut<\/li>\n  <li>cranberry<\/li>\n  <li>cucumber<\/li>\n  <li>currant<\/li>\n  <li>damson<\/li>\n  <li>date<\/li>\n  <li>dragonfruit<\/li>\n  <li>durian<\/li>\n  <li>eggplant<\/li>\n  <li>elderberry<\/li>\n  <li>feijoa<\/li>\n  <li>fig<\/li>\n  <li>goji berry<\/li>\n  <li>gooseberry<\/li>\n  <li>grape<\/li>\n  <li>grapefruit<\/li>\n  <li>guava<\/li>\n  <li>honeydew<\/li>\n  <li>huckleberry<\/li>\n  <li>jackfruit<\/li>\n  <li>jambul<\/li>\n  <li>jujube<\/li>\n  <li>kiwi fruit<\/li>\n  <li>kumquat<\/li>\n  <li>lemon<\/li>\n  <li>lime<\/li>\n  <li>loquat<\/li>\n  <li>lychee<\/li>\n  <li>mandarine<\/li>\n  <li>mango<\/li>\n  <li>mulberry<\/li>\n  <li>nectarine<\/li>\n  <li>nut<\/li>\n  <li>olive<\/li>\n  <li>orange<\/li>\n  <li>pamelo<\/li>\n  <li>papaya<\/li>\n  <li>passionfruit<\/li>\n  <li>peach<\/li>\n  <li>pear<\/li>\n  <li>persimmon<\/li>\n  <li>physalis<\/li>\n  <li>pineapple<\/li>\n  <li>plum<\/li>\n  <li>pomegranate<\/li>\n  <li>pomelo<\/li>\n  <li>purple mangosteen<\/li>\n  <li>quince<\/li>\n  <li>raisin<\/li>\n  <li>rambutan<\/li>\n  <li>raspberry<\/li>\n  <li>redcurrant<\/li>\n  <li>rock melon<\/li>\n  <li>salal berry<\/li>\n  <li>satsuma<\/li>\n  <li>star fruit<\/li>\n  <li>strawberry<\/li>\n  <li>tamarillo<\/li>\n  <li>tangerine<\/li>\n  <li>ugli fruit<\/li>\n  <li>watermelon<\/li>\n<\/ul>"},"evals":[],"jsHooks":[]}</script>
 <pre class="r"><code>bananas &lt;- c(&quot;banana&quot;, &quot;Banana&quot;, &quot;BANANA&quot;)
 str_view(bananas, &quot;banana&quot;)</code></pre>
-<div id="htmlwidget-1a0bb646b3877ab9b4f0" style="width:960px;height:auto;" class="str_view html-widget"></div>
-<script type="application/json" data-for="htmlwidget-1a0bb646b3877ab9b4f0">{"x":{"html":"<ul>\n  <li><span class='match'>banana<\/span><\/li>\n  <li>Banana<\/li>\n  <li>BANANA<\/li>\n<\/ul>"},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-446db3dd05459c729e21" style="width:960px;height:auto;" class="str_view html-widget"></div>
+<script type="application/json" data-for="htmlwidget-446db3dd05459c729e21">{"x":{"html":"<ul>\n  <li><span class='match'>banana<\/span><\/li>\n  <li>Banana<\/li>\n  <li>BANANA<\/li>\n<\/ul>"},"evals":[],"jsHooks":[]}</script>
 <pre class="r"><code>str_view(bananas, regex(&quot;banana&quot;, ignore_case = TRUE))</code></pre>
-<div id="htmlwidget-8c86bff64a869575a956" style="width:960px;height:auto;" class="str_view html-widget"></div>
-<script type="application/json" data-for="htmlwidget-8c86bff64a869575a956">{"x":{"html":"<ul>\n  <li><span class='match'>banana<\/span><\/li>\n  <li><span class='match'>Banana<\/span><\/li>\n  <li><span class='match'>BANANA<\/span><\/li>\n<\/ul>"},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-924a00c4c174410ef7ce" style="width:960px;height:auto;" class="str_view html-widget"></div>
+<script type="application/json" data-for="htmlwidget-924a00c4c174410ef7ce">{"x":{"html":"<ul>\n  <li><span class='match'>banana<\/span><\/li>\n  <li><span class='match'>Banana<\/span><\/li>\n  <li><span class='match'>BANANA<\/span><\/li>\n<\/ul>"},"evals":[],"jsHooks":[]}</script>
 <pre class="r"><code>x &lt;- &quot;Line 1\nLine 2\nLine 3&quot;
 str_extract_all(x, &quot;^Line&quot;)[[1]]</code></pre>
 <pre><code>## [1] &quot;Line&quot;</code></pre>
@@ -847,8 +848,8 @@ str_match(&quot;514-791-8141&quot;, phone)</code></pre>
 )</code></pre>
 <pre><code>## Unit: microseconds
 ##   expr     min       lq     mean   median       uq     max neval
-##  fixed  93.236  96.5940 119.6455 100.9390 102.9145 367.803    20
-##  regex 245.335 255.4085 283.9712 258.5685 310.7170 348.840    20</code></pre>
+##  fixed  96.001 100.1495 119.3887 104.6925 123.0625 245.729    20
+##  regex 253.630 256.1985 291.0824 293.1365 299.2605 419.556    20</code></pre>
 <pre class="r"><code>a1 &lt;- &quot;\u00e1&quot;
 a2 &lt;- &quot;a\u0301&quot;
 c(a1, a2)</code></pre>
@@ -880,8 +881,8 @@ i</code></pre>
 ## [1] &quot;en_US&quot;</code></pre>
 <pre class="r"><code>x &lt;- &quot;This is a sentence.&quot;
 str_view_all(x, boundary(&quot;word&quot;))</code></pre>
-<div id="htmlwidget-60fcf82d021d63d12218" style="width:960px;height:auto;" class="str_view html-widget"></div>
-<script type="application/json" data-for="htmlwidget-60fcf82d021d63d12218">{"x":{"html":"<ul>\n  <li><span class='match'>This<\/span> <span class='match'>is<\/span> <span class='match'>a<\/span> <span class='match'>sentence<\/span>.<\/li>\n<\/ul>"},"evals":[],"jsHooks":[]}</script>
+<div id="htmlwidget-862ff736fc213058cd3a" style="width:960px;height:auto;" class="str_view html-widget"></div>
+<script type="application/json" data-for="htmlwidget-862ff736fc213058cd3a">{"x":{"html":"<ul>\n  <li><span class='match'>This<\/span> <span class='match'>is<\/span> <span class='match'>a<\/span> <span class='match'>sentence<\/span>.<\/li>\n<\/ul>"},"evals":[],"jsHooks":[]}</script>
 <pre class="r"><code>str_extract_all(x, boundary(&quot;word&quot;))</code></pre>
 <pre><code>## [[1]]
 ## [1] &quot;This&quot;     &quot;is&quot;       &quot;a&quot;        &quot;sentence&quot;</code></pre>
