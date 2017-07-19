@@ -1,0 +1,96 @@
+---
+title: "07_19_2017"
+author: "John D."
+date: "July 14, 2017"
+output: 
+  html_document: 
+    keep_md: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# 14.4 Tools
+
+## 14.4.1 Detect matches
+
+```{r}
+library(tidyverse)
+library(stringr)
+x <- c("apple", "banana", "pear")
+str_detect(x, "e")
+
+sum(str_detect(words, "^t"))
+
+mean(str_detect(words, "[aeiou]$"))
+
+no_vowels_1 <- !str_detect(words, "[aeiou]")
+
+no_vowels_2 <- str_detect(words, "^[^aeiou]+$")
+identical(no_vowels_1, no_vowels_2)
+
+words[str_detect(words, "x$")]
+
+str_subset(words, "x$")
+
+df <- tibble(
+  word = words, 
+  i = seq_along(word)
+)
+df %>% 
+  filter(str_detect(words, "x$"))
+
+x <- c("apple", "banana", "pear")
+str_count(x, "a")
+
+mean(str_count(words, "[aeiou]"))
+
+df %>% 
+  mutate(
+    vowels = str_count(word, "[aeiou]"),
+    consonants = str_count(word, "[^aeiou]")
+  )
+
+str_count("abababa", "aba")
+
+#str_view_all("abababa", "aba")
+```
+
+### 14.4.2 Exercises
+
+1. For each of the following challenges, try solving it by using both a single regular expression, and a combination of multiple `str_detect()` calls.
+
+    1. Find all words that start or end with x.
+    
+    ```{r}
+words[str_detect(words, "^x|x$")]
+words[str_detect(words,"^x") | str_detect(words,"x$")]
+```
+
+    2. Find all words that start with a vowel and end with a consonant
+    
+    ```{r}
+words[str_detect(words, "^[aeiou].*[^aeiou]$")]
+words[str_detect(words, "^[aeiou]") & str_detect(words, "[^aeiou]$")]
+```
+
+    3. Are there any words that contain at least one of each different vowel?
+    
+    ```{r}
+### Test  
+test <- c("allotetraploid","autotetraploidy")
+test[str_detect(sapply(test, function(x) paste(sort(unlist(str_split(x,""))), collapse = "")),"a{1,}.*e{1,}.*i{1,}.*o{1,}.*u")]
+
+### Actual 
+words[str_detect(sapply(words, function(x) paste(sort(unlist(str_split(x,""))), collapse = "")),"a{1,}.*e{1,}.*i{1,}.*o{1,}.*u")]
+words[str_detect(words,"a")&str_detect(words,"e")&str_detect(words,"i")&str_detect(words,"o")&str_detect(words,"u")]
+```
+
+2. What word has the highest number of vowels? What word has the highest proportion of vowels? (Hint: what is the denominator?)
+
+```{r}
+words[which(str_count(words,"[aeiou]") == max(str_count(words,"[aeiou]")))]
+```
+
+    A is the word with the highest proportion of vowels in the word object.
