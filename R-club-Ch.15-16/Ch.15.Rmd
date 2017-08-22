@@ -1,0 +1,294 @@
+---
+title: "Ch.15"
+author: "John D."
+date: "July 20, 2017"
+output: 
+  html_document: 
+    keep_md: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(forcats)
+```
+
+# Factors
+
+## 15.2 Creating factors
+
+```{r}
+x1 <- c("Dec", "Apr", "Jan", "Mar")
+
+x2 <- c("Dec", "Apr", "Jam", "Mar")
+
+sort(x1)
+
+month_levels <- c(
+  "Jan", "Feb", "Mar", "Apr", "May", "Jun", 
+  "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"
+)
+
+y1 <- factor(x1, levels = month_levels)
+y1
+sort(y1)
+
+y2 <- factor(x2, levels = month_levels)
+y2
+
+y2 <- parse_factor(x2, levels = month_levels)
+
+factor(x1)
+
+f1 <- factor(x1, levels = unique(x1))
+f1
+
+f2 <- x1 %>% factor() %>% fct_inorder()
+f2
+
+levels(f2)
+```
+
+## General Social Survey
+
+```{r}
+gss_cat
+
+gss_cat %>%
+  count(race)
+
+ggplot(gss_cat, aes(race)) +
+  geom_bar()
+
+ggplot(gss_cat, aes(race)) +
+  geom_bar() +
+  scale_x_discrete(drop = FALSE)
+```
+
+### 15.3.1 Exercise
+
+1. Explore the distribution of `rincome` (reported income). What makes the default bar chart hard to understand? How could you improve the plot?
+
+```{r}
+ggplot(gss_cat, aes(rincome)) +
+  geom_bar() +
+  scale_x_discrete(drop = FALSE) +
+  theme(axis.text.x = element_text(angle = 90))
+
+ggplot(gss_cat, aes(rincome)) +
+  geom_bar() +
+  scale_x_discrete(limits = rev(levels(gss_cat$rincome)), drop = FALSE) +
+  theme(axis.text.x = element_text(angle = 90))
+```
+The money amounts go from most to least which is reverse of how most would present it. Also would be nice to have categories which do not have a dollar range grouped together at the end.
+
+2. What is the most common `relig` in this survey? What’s the most common `partyid`?
+
+```{r}
+gss_cat %>%
+  count(relig, sort = T) %>%
+  head(1)
+
+gss_cat %>%
+  count(partyid, sort = T) %>%
+  head(1)
+```
+
+3. Which `relig` does `denom` (denomination) apply to? How can you find out with a table? How can you find out with a visualisation?
+
+```{r}
+gss_cat %>%
+  group_by(relig) %>%
+  count(denom, sort = T)
+
+gss_cat %>%
+  group_by(relig) %>%
+  count(denom, sort = T) %>%
+  mutate(comb = paste(relig,denom, sep = "_")) %>%
+  ggplot(aes(reorder(comb, order(n)), weight = n)) +
+  geom_bar() +
+  theme(axis.text.x = element_text(angle = 90))
+
+gss_cat %>%
+  filter(relig == "Protestant") %>%
+  count(denom) %>%
+  ggplot(aes(reorder(denom, n), n)) +
+  geom_bar(stat = "identity") +
+  theme(axis.text.x = element_text(angle = 90))
+```
+
+## Modifying factor order
+
+```{r}
+relig_summary <- gss_cat %>%
+  group_by(relig) %>%
+  summarise(
+    age = mean(age, na.rm = TRUE),
+    tvhours = mean(tvhours, na.rm = TRUE),
+    n = n()
+  )
+
+ggplot(relig_summary, aes(tvhours, relig)) + geom_point()
+ggplot(relig_summary, aes(tvhours, fct_reorder(relig, tvhours))) +
+  geom_point()
+
+relig_summary %>%
+  mutate(relig = fct_reorder(relig, tvhours)) %>%
+  ggplot(aes(tvhours, relig)) +
+    geom_point()
+
+rincome_summary <- gss_cat %>%
+  group_by(rincome) %>%
+  summarise(
+    age = mean(age, na.rm = TRUE),
+    tvhours = mean(tvhours, na.rm = TRUE),
+    n = n()
+  )
+
+ggplot(rincome_summary, aes(age, fct_reorder(rincome, age))) + geom_point()
+
+ggplot(rincome_summary, aes(age, fct_relevel(rincome, "Not applicable"))) +
+  geom_point()
+
+by_age <- gss_cat %>%
+  filter(!is.na(age)) %>%
+  group_by(age, marital) %>%
+  count() %>%
+  ungroup() %>%
+  group_by(age) %>%
+  mutate(prop = n / sum(n))
+
+ggplot(by_age, aes(age, prop, colour = marital)) +
+  geom_line(na.rm = TRUE)
+
+ggplot(by_age, aes(age, prop, colour = fct_reorder2(marital, age, prop))) +
+  geom_line() +
+  labs(colour = "marital")
+
+gss_cat %>%
+  mutate(marital = marital %>% fct_infreq() %>% fct_rev()) %>%
+  ggplot(aes(marital)) +
+    geom_bar()
+```
+
+### 15.4.1 Exercises
+
+1. There are some suspiciously high numbers in tvhours. Is the mean a good summary?
+
+```{r}
+summary(gss_cat$tvhours)
+
+gss_cat %>%
+  group_by(tvhours) %>%
+  count() %>%
+  ggplot(aes(tvhours, weight = n)) + 
+  geom_bar()
+```
+
+The mean is a good summary despite the erroneous high numbers
+
+2. For each factor in `gss_cat` identify whether the order of the levels is arbitrary or principled
+
+```{r}
+str(gss_cat)
+levels(gss_cat$marital)
+levels(gss_cat$race)
+levels(gss_cat$rincome)
+levels(gss_cat$partyid)
+levels(gss_cat$relig)
+levels(gss_cat$denom)
+```
+
+Marital is arbitrary, race is arbitrary, rincome is principled, partyid is principled, relig is arbitrary, and denom is arbitrary
+
+3. Why did moving “Not applicable” to the front of the levels move it to the bottom of the plot?
+
+Moving "Not applicable" to the front gave it the index value of 1 which puts it at the bottom of the y axis.
+
+## 15.5 Modifying factor levels
+
+```{r}
+gss_cat %>% count(partyid)
+
+gss_cat %>%
+  mutate(partyid = fct_recode(partyid,
+    "Republican, strong"    = "Strong republican",
+    "Republican, weak"      = "Not str republican",
+    "Independent, near rep" = "Ind,near rep",
+    "Independent, near dem" = "Ind,near dem",
+    "Democrat, weak"        = "Not str democrat",
+    "Democrat, strong"      = "Strong democrat"
+  )) %>%
+  count(partyid)
+
+gss_cat %>%
+  mutate(partyid = fct_recode(partyid,
+    "Republican, strong"    = "Strong republican",
+    "Republican, weak"      = "Not str republican",
+    "Independent, near rep" = "Ind,near rep",
+    "Independent, near dem" = "Ind,near dem",
+    "Democrat, weak"        = "Not str democrat",
+    "Democrat, strong"      = "Strong democrat",
+    "Other"                 = "No answer",
+    "Other"                 = "Don't know",
+    "Other"                 = "Other party"
+  )) %>%
+  count(partyid)
+
+gss_cat %>%
+  mutate(partyid = fct_collapse(partyid,
+    other = c("No answer", "Don't know", "Other party"),
+    rep = c("Strong republican", "Not str republican"),
+    ind = c("Ind,near rep", "Independent", "Ind,near dem"),
+    dem = c("Not str democrat", "Strong democrat")
+  )) %>%
+  count(partyid)
+
+gss_cat %>%
+  mutate(relig = fct_lump(relig)) %>%
+  count(relig)
+
+gss_cat %>%
+  mutate(relig = fct_lump(relig, n = 10)) %>%
+  count(relig, sort = TRUE) %>%
+  print(n = Inf)
+```
+
+### 15.5.1 Exercises
+
+1. How have the proportions of people identifying as Democrat, Republican, and Independent changed over time?
+
+```{r}
+parties <- gss_cat %>%
+  mutate(partyid = fct_collapse(partyid,
+    other = c("No answer", "Don't know", "Other party"),
+    rep = c("Strong republican", "Not str republican"),
+    ind = c("Ind,near rep", "Independent", "Ind,near dem"),
+    dem = c("Not str democrat", "Strong democrat")
+  )) %>%
+  group_by(year) %>%
+  count(partyid) %>%
+  mutate(prop = n / sum(n))
+
+ggplot(parties, aes(year, prop, fill = partyid)) +
+  geom_bar(stat = "identity")
+
+ggplot(parties, aes(partyid, prop, fill = partyid)) +
+  geom_bar(stat = "identity") +
+  facet_wrap(~year)
+```
+
+2. How could you collapse rincome into a small set of categories?
+
+```{r}
+gss_cat %>%
+  mutate(rincome = fct_collapse(rincome,
+    other = c("No answer", "Don't know", "Refused", "Not applicable"),
+    `$4999 or less` = c("Lt $1000", "$1000 to 2999", "$3000 to 3999", "$4000 to 4999"),
+    `$5000 to 9999`= c("$5000 to 5999", "$6000 to 6999", "$7000 to 7999", "$8000 to 9999")
+  )) %>%
+  count(rincome)
+```
