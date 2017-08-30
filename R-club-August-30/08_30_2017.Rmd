@@ -1,0 +1,346 @@
+---
+title: "08_30_2017"
+author: "John D."
+date: "August 24, 2017"
+output: 
+  html_document: 
+    keep_md: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(error = TRUE, echo = TRUE)
+library(tidyverse)
+```
+
+# 20. Vectors
+
+## 20.4 Using atomic vectors
+
+### 20.4.1 Coercion
+
+```{r}
+x <- sample(20, 100, replace = TRUE)
+y <- x > 10
+sum(y)
+mean(y)
+
+if (length(x)) {
+  # do something
+}
+
+typeof(c(TRUE, 1L))
+
+typeof(c(1L, 1.5))
+
+typeof(c(1.5, "a"))
+```
+
+### 20.4.2 Test functions
+
+### 20.4.3 Scalars and recycling rules
+
+```{r}
+sample(10) + 100
+
+runif(10) > 0.5
+
+1:10 + 1:2
+
+1:10 + 1:3
+
+tibble(x = 1:4, y = 1:2)
+
+tibble(x = 1:4, y = rep(1:2, 2))
+
+tibble(x = 1:4, y = rep(1:2, each = 2))
+```
+
+### 20.4.4 Naming vectors
+
+```{r}
+c(x = 1, y = 2, z = 4)
+
+set_names(1:3, c("a", "b", "c"))
+```
+
+### 20.4.5 Subsetting
+
+```{r}
+x <- c("one", "two", "three", "four", "five")
+
+x[c(3, 2, 5)]
+
+x[c(1, 1, 5, 5, 5, 2)]
+
+x[c(-1, -3, -5)]
+
+x[c(1, -1)]
+
+x[0]
+
+x <- c(10, 3, NA, 5, 8, 1, NA)
+
+x[!is.na(x)]
+
+x[x %% 2 == 0]
+
+x <- c(abc = 1, def = 2, xyz = 5)
+x[c("xyz", "def")]
+```
+
+### 20.4.6 Exercises
+
+1. What does `mean(is.na(x))` tell you about a vector x? What about `sum(!is.finite(x))`?
+
+```{r}
+mean(is.na(x))
+sum(!is.finite(x))
+```
+
+`mean(is.na(x))` tells you what proportion of the vector is `NA` values. `sum(!is.finite(x))` tells you how many elements in the vector are not finite or are `NA` or `NaN`
+
+2. Carefully read the documentation of `is.vector()`. What does it actually test for? Why does `is.atomic()` not agree with the definition of atomic vectors above?
+
+```{r}
+?is.vector
+?is.atomic
+y <- list(TRUE,123,"a")
+is.vector(x)
+is.atomic(x)
+is.vector(y)
+is.atomic(y)
+```
+
+`is.vector()` tests if the object is a vector of a specified mode, by default the mode is 'any'. It will also return false if the vector has any attributes besides names. It is common to call the atomic types ‘atomic vectors’, but note that is.vector imposes further restrictions: an object can be atomic but not a vector (in that sense). A list is a vector, but a list is not atomic. In order to be atomic, all the elements in the vector must be the same type.
+
+3. Compare and contrast `setNames()` with `purrr::set_names()`.
+
+```{r}
+?setNames
+?purrr::set_names
+setNames(1:4, c("a", "b", "c", "d"))
+setNames(letters[1:5])
+set_names(1:4, c("a", "b", "c", "d"))
+set_names(letters[1:5])
+```
+
+`setNames()` takes an object and returns a copy of the object in which names have been assigned. `purrr::set_names()` is a snake case wrapper for `setNames()`, with tweaked defaults, and stricter argument checking. with `purrr::set_names()` if the second argument is omitted the vector is named with itself.
+
+4. Create functions that take a vector as input and returns:
+
+    1. The last value. Should you use [ or [[?
+
+    2. The elements at even numbered positions.
+
+    3. Every element except the last value.
+
+    4. Only even numbers (and no missing values).
+    
+```{r}
+x <- c(NA,TRUE,0,FALSE,"apple",123)
+
+# 1
+last_val <- function(x){
+  #Use [[]] because you want the value not the vector
+  return(x[[length(x)]])
+}
+last_val(x)
+
+# 2
+even_pos <- function(x){
+  return(x[c(FALSE,TRUE)])
+}
+even_pos(x)
+
+# 3
+not_last <- function(x){
+  return(x[-length(x)])
+}
+not_last(x)
+
+# 4
+only_evens <- function(x){
+  options(warn=-1)
+  x <- as.numeric(x[!is.na(as.numeric(x))])
+  options(warn=0)
+  return(x[x %% 2 == 0])
+}
+only_evens(x)
+```
+
+5. Why is `x[-which(x > 0)]` not the same as `x[x <= 0]`?
+
+```{r}
+x <- c(-2134,525,0,1,-24)
+
+x[-which(x > 0)]
+
+x[x <= 0]
+```
+
+`x[-which(x > 0)]` creates a vector with the negated positions of x where x is greater than 0 then subsets the x using the new vector. `x[x <= 0]` creates a logical vector and then subsets x using the logical vector. One is position subsetting and the other is logical subsetting.
+
+6. What happens when you subset with a positive integer that’s bigger than the length of the vector? What happens when you subset with a name that doesn’t exist?
+
+```{r}
+x <- c(-2134,525,0,1,-24)
+length(x)
+x[5]
+x[6]
+x["a"]
+```
+
+Both will return `NA`
+
+## 20.5 Recursive vectors (lists)
+
+```{r}
+x <- list(1, 2, 3)
+x
+str(x)
+x_named <- list(a = 1, b = 2, c = 3)
+str(x_named)
+y <- list("a", 1L, 1.5, TRUE)
+str(y)
+z <- list(list(1, 2), list(3, 4))
+str(z)
+```
+
+### 20.5.1 Visualising lists
+
+```{r}
+x1 <- list(c(1, 2), c(3, 4))
+x2 <- list(list(1, 2), list(3, 4))
+x3 <- list(1, list(2, list(3)))
+```
+
+### 20.5.2 Subsetting
+
+```{r}
+a <- list(a = 1:3, b = "a string", c = pi, d = list(-1, -5))
+str(a)
+str(a[1:2])
+str(a[4])
+str(a[[1]])
+str(a[[4]])
+str(a[[4]][[1]])
+a$a
+a[["a"]]
+a[[4]][1]
+a[[4]][[1]]
+
+```
+
+### 20.5.3 Lists of condiments
+
+1. Draw the following lists as nested sets:
+
+    1. `list(a, b, list(c, d), list(e, f))`
+    2. `list(list(list(list(list(list(a))))))`
+
+2. What happens if you subset a tibble as if you’re subsetting a list? What are the key differences between a list and a tibble?
+
+```{r}
+df1 <- as.tibble(mtcars)
+list1 <- list(mtcars)
+
+df1[1]
+list1[1]
+```
+
+Subsetting a tibble will give you the selected rows and columns or element. subsetting a dataframe that results in a vector will cause the created vector to no longer be a data frame. With lists [] will give you back list always.
+
+## 20.6 Attributes
+
+```{r}
+x <- 1:10
+attr(x, "greeting")
+attr(x, "greeting") <- "Hi!"
+attr(x, "farewell") <- "Bye!"
+attributes(x)
+x
+
+as.Date
+methods("as.Date")
+
+getS3method("as.Date", "default")
+getS3method("as.Date", "numeric")
+```
+
+## 20.7 Augmented vectors
+
+### 20.7.1 Factors
+
+```{r}
+x <- factor(c("ab", "cd", "ab"), levels = c("ab", "cd", "ef"))
+typeof(x)
+attributes(x)
+x
+```
+
+### 20.7.2 Dates and date-times
+
+```{r}
+x <- as.Date("1971-01-01")
+unclass(x)
+
+typeof(x)
+attributes(x)
+
+x <- lubridate::ymd_hm("1970-01-01 01:00")
+unclass(x)
+
+typeof(x)
+attributes(x)
+
+attr(x, "tzone") <- "US/Pacific"
+x
+attr(x, "tzone") <- "US/Eastern"
+x
+
+y <- as.POSIXlt(x)
+typeof(y)
+attributes(y)
+```
+
+### 20.7.3 Tibbles
+
+```{r}
+tb <- tibble::tibble(x = 1:5, y = 5:1)
+tb
+typeof(tb)
+attributes(tb)
+
+df <- data.frame(x = 1:5, y = 5:1)
+typeof(df)
+typeof(df)
+attributes(df)
+```
+
+### 20.7.4 Exercises
+
+1. What does `hms::hms(3600)` return? How does it print? What primitive type is the augmented vector built on top of? What attributes does it use?
+
+```{r}
+(x <- hms::hms(3600))
+typeof(x)
+attributes(x)
+```
+
+2. Try and make a tibble that has columns with different lengths. What happens?
+
+```{r}
+tibble::tibble(x = 1:5, y = 4:1)
+tibble::tibble(x = 1:5, y = 10:1)
+```
+
+You get an error, all columns must be the same length or 1. 1 being used as a scalar.
+
+3. Based on the definition above, is it ok to have a list as a column of a tibble?
+
+```{r}
+(z <- tibble::tibble(x = 1:5, y = list(123)))
+z[,2][[1]]
+```
+
+You can have a list as a column of a tibble as long as it fulfills the previous requirement.
