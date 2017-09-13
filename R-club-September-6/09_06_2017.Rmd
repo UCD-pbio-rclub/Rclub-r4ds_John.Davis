@@ -1,0 +1,447 @@
+---
+title: "09_06_2017"
+author: "John D."
+date: "September 13, 2017"
+output: 
+  html_document: 
+    keep_md: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, error = T)
+```
+
+21.1-21.4
+
+# 21 Iteration
+
+## 21.1 Introduction
+
+### 21.1.1 Prerequisites
+
+```{r}
+library(tidyverse)
+```
+
+## 21.2 For loops
+
+```{r}
+df <- tibble(
+  a = rnorm(10),
+  b = rnorm(10),
+  c = rnorm(10),
+  d = rnorm(10)
+)
+df
+
+median(df$a)
+median(df$b)
+median(df$c)
+median(df$d)
+
+output <- vector("double", ncol(df))  # 1. output
+for (i in seq_along(df)) {            # 2. sequence
+  output[[i]] <- median(df[[i]])      # 3. body
+}
+output
+
+y <- vector("double", 0)
+seq_along(y)
+
+1:length(y)
+```
+
+### 21.2.1 Exercises
+
+1. Write for loops to:
+    1. Compute the mean of every column in `mtcars`.
+    2. Determine the type of each column in `nycflights13::flights`.
+    3. Compute the number of unique values in each column of `iris`.
+    4. Generate 10 random normals for each of μ= −10, 0, 10, and 100
+
+```{r}
+# 1
+
+output <- vector("double", ncol(mtcars))
+for (i in seq_along(mtcars)) {
+  output[[i]] <- mean(mtcars[[i]])
+}
+output
+
+# 2
+output <- vector("character", ncol(nycflights13::flights))
+for (i in seq_along(nycflights13::flights)) {
+  output[[i]] <- typeof(nycflights13::flights[[i]])
+}
+output
+
+# 3
+
+output <- vector("integer", ncol(iris))
+for (i in seq_along(iris)) {
+  output[[i]] <- length(unique(iris[[i]]))
+}
+output
+
+# 4
+
+means <- c(-10,0,10,100)
+output <- matrix(NA, nrow = 10, ncol = 4)
+
+for (i in seq_along(means)) {
+  output[,i] <- rnorm(10, mean = means[i])
+}
+output
+```
+
+2. Eliminate the for loop in each of the following examples by taking advantage of an existing function that works with vectors:
+
+```{r}
+# BEFORE
+out <- ""
+for (x in letters) {
+  out <- stringr::str_c(out, x)
+}
+out
+
+# AFTER
+out <- stringr::str_c(letters, collapse = "")
+out
+
+# BEFORE
+x <- sample(100)
+sd <- 0
+for (i in seq_along(x)) {
+  sd <- sd + (x[i] - mean(x)) ^ 2
+}
+sd <- sqrt(sd / (length(x) - 1))
+sd
+
+# AFTER
+sd <- sd(x)
+sd
+
+# BEFORE
+x <- runif(100)
+out <- vector("numeric", length(x))
+out[1] <- x[1]
+for (i in 2:length(x)) {
+  out[i] <- out[i - 1] + x[i]
+}
+out
+
+#AFTER
+cumsum(x)
+
+```
+
+3. Combine your function writing and for loop skills:
+    1. Write a for loop that `prints()` the lyrics to the children’s song “Alice the camel”.
+    2. Convert the nursery rhyme “ten in the bed” to a function. Generalise it to any number of people in any sleeping structure.
+    3. Convert the song “99 bottles of beer on the wall” to a function. Generalise to any number of any vessel containing any liquid on any surface.
+    
+```{r}
+# I'm just gonna do number 3
+
+beer_song <- function(n = 99, vessel = "bottle", liquid = "beer", surface = "wall"){
+  for(i in n:1){
+    cat(i, " ", vessel, "(s) of ", liquid, " on the ", surface, ".\n",
+        i, " ", vessel, "(s) of ", liquid, ".\n",
+        "You take one down, pass it around,\n", 
+        i-1, " ", vessel, "s of ", liquid, " on the ", surface, ".\n\n",
+        sep = "")
+  }
+  cat(0, " ", vessel, "s of ", liquid, " on the ", surface, ".\n", 
+      0, " ", vessel, "(s) of ", liquid, ".\n",
+      "The song is over, go home. \n",
+      sep = "")
+}
+beer_song(10, "handle", "vodka", "table")
+```
+
+4. It’s common to see for loops that don’t preallocate the output and instead increase the length of a vector at each step: How does this affect performance? Design and execute an experiment.
+
+```{r}
+x <- sapply(100000, rnorm)
+system.time({
+  output <- vector("integer", 0)
+for (i in seq_along(x)) {
+  output <- c(output, lengths(x[[i]]))
+}
+output
+})
+
+system.time({
+  output2 <- vector("integer", length(x))
+  for (i in seq_along(output2)) {
+  output2[[i]] <- lengths(x[[i]])
+}
+})
+
+all.equal(output,output2)
+```
+
+## 21.3 For loop variations
+
+### 21.3.1 Modifying an existing object
+
+```{r}
+df <- tibble(
+  a = rnorm(10),
+  b = rnorm(10),
+  c = rnorm(10),
+  d = rnorm(10)
+)
+
+rescale01 <- function(x) {
+  rng <- range(x, na.rm = TRUE)
+  (x - rng[1]) / (rng[2] - rng[1])
+}
+
+df$a <- rescale01(df$a)
+df$b <- rescale01(df$b)
+df$c <- rescale01(df$c)
+df$d <- rescale01(df$d)
+
+df <- tibble(
+  a = rnorm(10),
+  b = rnorm(10),
+  c = rnorm(10),
+  d = rnorm(10)
+)
+
+for (i in seq_along(df)) {
+  df[[i]] <- rescale01(df[[i]])
+}
+
+```
+
+### 21.3.2 Looping patterns
+
+```{r}
+results <- vector("list", length(x))
+names(results) <- names(x)
+
+for (i in seq_along(x)) {
+  name <- names(x)[[i]]
+  value <- x[[i]]
+}
+```
+
+### 21.3.3 Unknown output length
+
+```{r}
+means <- c(0, 1, 2)
+
+output <- double()
+for (i in seq_along(means)) {
+  n <- sample(100, 1)
+  output <- c(output, rnorm(n, means[[i]]))
+}
+str(output)
+
+out <- vector("list", length(means))
+for (i in seq_along(means)) {
+  n <- sample(100, 1)
+  out[[i]] <- rnorm(n, means[[i]])
+}
+str(out)
+str(unlist(out))
+
+```
+
+### 21.3.4 Unknown sequence length
+
+```{r}
+while (condition) {
+  # body
+}
+
+for (i in seq_along(x)) {
+  # body
+}
+
+i <- 1
+while (i <= length(x)) {
+  # body
+  i <- i + 1 
+}
+
+flip <- function() sample(c("T", "H"), 1)
+
+flips <- 0
+nheads <- 0
+
+while (nheads < 3) {
+  if (flip() == "H") {
+    nheads <- nheads + 1
+  } else {
+    nheads <- 0
+  }
+  flips <- flips + 1
+}
+flips
+
+
+```
+
+### 21.3.5 Exercises
+
+1. Imagine you have a directory full of CSV files that you want to read in. You have their paths in a vector, `files <- dir("data/", pattern = "\\.csv$", full.names = TRUE)`, and now want to read each one with `read_csv()`. Write the for loop that will load them into a single data frame.
+
+```{r}
+# Create example files
+write.csv(rnorm(100), file = "data/file_1.csv")
+write.csv(rnorm(100), file = "data/file_2.csv")
+
+# Gather file names
+files <- dir("data/", pattern = "\\.csv$", full.names = TRUE)
+head(files)
+
+# Read in files
+dfs <- vector("list", length(files))
+for (i in seq_along(dfs)){
+  dfs[[i]] <- read.csv(files[[i]])
+}
+dfs
+master_df <- dplyr::bind_rows(dfs)
+master_df
+```
+
+2. What happens if you use `for (nm in names(x))` and `x` has no names? What if only some of the elements are named? What if the names are not unique?
+
+```{r}
+x <- 1:5
+names(x)
+
+for(nm in names(x)){
+  print(x[[nm]])
+}
+
+names(x)[1:3] <- c("a","b","c")
+names(x)
+
+for(nm in names(x)){
+  print(x[[nm]])
+}
+
+names(x)[1:5] <- c("a","b","c","a","e")
+names(x)
+
+for(nm in names(x)){
+  print(x[[nm]])
+}
+# returns first element with that name
+```
+
+3. Write a function that prints the mean of each numeric column in a data frame, along with its name. For example, `show_mean(iris)` would print:
+
+```{r}
+show_mean <- function(df){
+  for(i in seq_along(df)){
+    if (is.numeric(df[[i]])){
+      cat(names(df[i]),": ", round(mean(df[[i]]), 2), "\n", sep = "")
+    }
+  }
+}
+show_mean(iris)
+```
+
+4. What does this code do? How does it work?
+
+```{r}
+trans <- list( 
+  disp = function(x) x * 0.0163871,
+  am = function(x) {
+    factor(x, labels = c("auto", "manual"))
+  }
+)
+for (var in names(trans)) {
+  mtcars[[var]] <- trans[[var]](mtcars[[var]])
+}
+names(trans)
+mtcars
+```
+
+Allows us to use names and apply actions to specific columns
+
+## 21.4 For loops vs. functionals
+
+```{r}
+df <- tibble(
+  a = rnorm(10),
+  b = rnorm(10),
+  c = rnorm(10),
+  d = rnorm(10)
+)
+
+output <- vector("double", length(df))
+for (i in seq_along(df)) {
+  output[[i]] <- mean(df[[i]])
+}
+output
+
+col_mean <- function(df) {
+  output <- vector("double", length(df))
+  for (i in seq_along(df)) {
+    output[i] <- mean(df[[i]])
+  }
+  output
+}
+
+col_median <- function(df) {
+  output <- vector("double", length(df))
+  for (i in seq_along(df)) {
+    output[i] <- median(df[[i]])
+  }
+  output
+}
+col_sd <- function(df) {
+  output <- vector("double", length(df))
+  for (i in seq_along(df)) {
+    output[i] <- sd(df[[i]])
+  }
+  output
+}
+
+f1 <- function(x) abs(x - mean(x)) ^ 1
+f2 <- function(x) abs(x - mean(x)) ^ 2
+f3 <- function(x) abs(x - mean(x)) ^ 3
+
+f <- function(x, i) abs(x - mean(x)) ^ i
+
+
+col_summary <- function(df, fun) {
+  out <- vector("double", length(df))
+  for (i in seq_along(df)) {
+    out[i] <- fun(df[[i]])
+  }
+  out
+}
+
+col_summary(df, median)
+col_summary(df, mean)
+```
+
+### 21.4.1 Exercises
+
+1. Read the documentation for `apply()`. In the 2d case, what two for loops does it generalise?
+
+Performs a for loop for either every row or every column
+
+2. Adapt `col_summary()` so that it only applies to numeric columns You might want to start with an `is_numeric()` function that returns a logical vector that has a TRUE corresponding to each numeric column.
+
+```{r}
+col_summary <- function(df, fun) {
+  df <- select_if(df, is.numeric)
+  out <- vector("double", length(df))
+  for (i in seq_along(df)) {
+    out[i] <- fun(df[[i]])
+  }
+  names(out) <- names(df)
+  out
+}
+col_summary(iris, mean)
+col_summary(iris, median)
+```
+
