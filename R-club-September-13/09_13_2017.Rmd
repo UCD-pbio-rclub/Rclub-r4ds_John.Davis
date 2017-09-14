@@ -52,6 +52,10 @@ models <- mtcars %>%
   split(.$cyl) %>% 
   map(~lm(mpg ~ wt, data = .))
 
+models <- list(mtcars) %>% 
+  #split(.$cyl) %>% 
+  map(~lm(mpg ~ wt, data = .))
+
 models %>% 
   map(summary) %>% 
   map_dbl(~.$r.squared)
@@ -83,6 +87,8 @@ threshold <- function(x, cutoff = 0.8) x[x > cutoff]
 x1 %>% sapply(threshold) %>% str()
 
 x2 %>% sapply(threshold) %>% str()
+
+map(x2, threshold) %>% str()
 
 ### in x1, first entry has 1 that passes, second has 2, and 3rd has none.
 ### in x2, each entry has 1 value that passes
@@ -240,8 +246,10 @@ sim <- tribble(
   "rnorm", list(sd = 5),
   "rpois", list(lambda = 10)
 )
-sim %>% 
+a <- sim %>% 
   mutate(sim = invoke_map(f, params, n = 10))
+
+a$sim
 ```
 
 ## 21.8 Walk
@@ -379,10 +387,15 @@ Is this a repeat of a question from last week? Guess want us to rewrite with new
 
 ```{r}
 col_summary3 <- function(df, f) {
-  is_num <- sapply(df, is.numeric)
+  is_num <- sapply(df[0], is.numeric)
   df_num <- df[, is_num]
 
   sapply(df_num, f)
+}
+
+col_summary4 <- function(df, f, ...) {
+  df_num <- keep(df, is.numeric)
+  map_dbl(df_num, f, ...)
 }
 ```
 

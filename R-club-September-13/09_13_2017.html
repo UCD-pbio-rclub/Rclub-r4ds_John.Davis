@@ -147,25 +147,25 @@ $(document).ready(function () {
 
 map_dbl(df, mean)</code></pre>
 <pre><code>##           a           b           c           d 
-## -0.37056356 -0.10572359 -0.47312229  0.06266538</code></pre>
+## -0.13013488  0.36141966  0.40002200  0.07556212</code></pre>
 <pre class="r"><code>map_dbl(df, median)</code></pre>
-<pre><code>##           a           b           c           d 
-## -0.08718001 -0.35904410 -0.17425323  0.04816292</code></pre>
+<pre><code>##          a          b          c          d 
+## 0.04304034 0.09119014 0.57080160 0.11324068</code></pre>
 <pre class="r"><code>map_dbl(df, sd)</code></pre>
-<pre><code>##        a        b        c        d 
-## 1.077508 1.216959 1.008722 1.143648</code></pre>
+<pre><code>##         a         b         c         d 
+## 1.0924106 1.1347601 0.9449628 0.8538313</code></pre>
 <pre class="r"><code>df %&gt;% map_dbl(mean)</code></pre>
 <pre><code>##           a           b           c           d 
-## -0.37056356 -0.10572359 -0.47312229  0.06266538</code></pre>
+## -0.13013488  0.36141966  0.40002200  0.07556212</code></pre>
 <pre class="r"><code>df %&gt;% map_dbl(median)</code></pre>
-<pre><code>##           a           b           c           d 
-## -0.08718001 -0.35904410 -0.17425323  0.04816292</code></pre>
+<pre><code>##          a          b          c          d 
+## 0.04304034 0.09119014 0.57080160 0.11324068</code></pre>
 <pre class="r"><code>df %&gt;% map_dbl(sd)</code></pre>
-<pre><code>##        a        b        c        d 
-## 1.077508 1.216959 1.008722 1.143648</code></pre>
+<pre><code>##         a         b         c         d 
+## 1.0924106 1.1347601 0.9449628 0.8538313</code></pre>
 <pre class="r"><code>map_dbl(df, mean, trim = 0.5)</code></pre>
-<pre><code>##           a           b           c           d 
-## -0.08718001 -0.35904410 -0.17425323  0.04816292</code></pre>
+<pre><code>##          a          b          c          d 
+## 0.04304034 0.09119014 0.57080160 0.11324068</code></pre>
 <pre class="r"><code>z &lt;- list(x = 1:3, y = 4:5)
 map_int(z, length)</code></pre>
 <pre><code>## x y 
@@ -180,16 +180,18 @@ models &lt;- mtcars %&gt;%
   split(.$cyl) %&gt;% 
   map(~lm(mpg ~ wt, data = .))
 
+models &lt;- list(mtcars) %&gt;% 
+  #split(.$cyl) %&gt;% 
+  map(~lm(mpg ~ wt, data = .))
+
 models %&gt;% 
   map(summary) %&gt;% 
   map_dbl(~.$r.squared)</code></pre>
-<pre><code>##         4         6         8 
-## 0.5086326 0.4645102 0.4229655</code></pre>
+<pre><code>## [1] 0.7528328</code></pre>
 <pre class="r"><code>models %&gt;% 
   map(summary) %&gt;% 
   map_dbl(&quot;r.squared&quot;)</code></pre>
-<pre><code>##         4         6         8 
-## 0.5086326 0.4645102 0.4229655</code></pre>
+<pre><code>## [1] 0.7528328</code></pre>
 <pre class="r"><code>x &lt;- list(list(1, 2, 3), list(4, 5, 6), list(7, 8, 9))
 x %&gt;% map_dbl(2)</code></pre>
 <pre><code>## [1] 2 5 8</code></pre>
@@ -216,6 +218,11 @@ x1 %&gt;% sapply(threshold) %&gt;% str()</code></pre>
 ##  $ : num(0)</code></pre>
 <pre class="r"><code>x2 %&gt;% sapply(threshold) %&gt;% str()</code></pre>
 <pre><code>##  num [1:3] 0.99 0.93 0.87</code></pre>
+<pre class="r"><code>map(x2, threshold) %&gt;% str()</code></pre>
+<pre><code>## List of 3
+##  $ : num 0.99
+##  $ : num 0.93
+##  $ : num 0.87</code></pre>
 <pre class="r"><code>### in x1, first entry has 1 that passes, second has 2, and 3rd has none.
 ### in x2, each entry has 1 value that passes</code></pre>
 </div>
@@ -254,20 +261,20 @@ iris %&gt;% map_int(~length(unique(.)))</code></pre>
 means &lt;- c(-10, 0, 10, 100)
 map(means, rnorm, n = 10)</code></pre>
 <pre><code>## [[1]]
-##  [1]  -7.970089 -10.478447 -12.120719  -9.086840  -9.500094  -9.263990
-##  [7] -10.300514 -10.120982 -11.209077  -8.341705
+##  [1] -11.295870  -9.843709  -8.958145  -9.834308  -9.603435 -11.399266
+##  [7] -10.659925  -9.804673 -10.844046 -10.000509
 ## 
 ## [[2]]
-##  [1] -0.5332820  1.0570912  1.5582202  0.3514070 -1.0436377 -1.2388758
-##  [7] -0.8341157 -2.1189502  1.1068485 -0.6969729
+##  [1]  0.93861864  1.51795351 -0.02186434 -2.11565147 -0.54623514
+##  [6] -0.99837578 -0.64041251  0.32152542 -0.72748895  0.11712276
 ## 
 ## [[3]]
-##  [1]  9.981900  7.916158 10.002572 10.332877  9.113074  9.373318  9.670477
-##  [8] 10.733777 10.774752  8.615145
+##  [1] 10.587825  8.675923  8.761271 11.021315  9.265790  9.309728 10.723319
+##  [8] 10.441971 12.066229 10.064813
 ## 
 ## [[4]]
-##  [1] 100.00218 101.65477  98.75686  98.26478 100.25496  99.65908  99.52452
-##  [8]  99.28881 100.18543 101.10578</code></pre>
+##  [1]  98.52666 101.21036 101.63196  98.55456  98.44701 102.53055 101.34144
+##  [8] 100.52728 101.48976  99.55323</code></pre>
 <pre class="r"><code># Works because second argument to rnrom is mean and n has already been used</code></pre>
 <ol start="2" style="list-style-type: decimal">
 <li>How can you create a single vector that for each column in a data frame indicates whether or not it’s a factor?</li>
@@ -280,38 +287,38 @@ map(means, rnorm, n = 10)</code></pre>
 </ol>
 <pre class="r"><code>map(1:5, runif)</code></pre>
 <pre><code>## [[1]]
-## [1] 0.84302
+## [1] 0.5487171
 ## 
 ## [[2]]
-## [1] 0.5483500 0.2655918
+## [1] 0.3382707 0.8721893
 ## 
 ## [[3]]
-## [1] 0.04424612 0.13690875 0.14593712
+## [1] 0.4972046 0.3212800 0.9884019
 ## 
 ## [[4]]
-## [1] 0.1350935 0.4702846 0.5840925 0.9037371
+## [1] 0.08619858 0.14715388 0.92020726 0.01034213
 ## 
 ## [[5]]
-## [1] 0.7080195 0.6897033 0.3583020 0.5905651 0.7595566</code></pre>
+## [1] 0.88964196 0.41658960 0.84736441 0.81972480 0.07418372</code></pre>
 <p>Applies function to each iteration and creates a list ie(runif(1), runif(2)).</p>
 <ol start="4" style="list-style-type: decimal">
 <li>What does <code>map(-2:2, rnorm, n = 5)</code> do? Why? What does <code>map_dbl(-2:2, rnorm, n = 5)</code> do? Why?</li>
 </ol>
 <pre class="r"><code>map(-2:2, rnorm, n = 5)</code></pre>
 <pre><code>## [[1]]
-## [1] -2.677344 -1.232446 -2.568387 -1.377887 -1.860787
+## [1] -3.931686 -2.008339 -3.697062 -1.845453 -3.800522
 ## 
 ## [[2]]
-## [1] -3.12527402 -2.11717065 -0.02702702  0.60438680  0.21714754
+## [1] -0.5116599 -1.5180186 -1.2208035 -2.4896918 -0.9130883
 ## 
 ## [[3]]
-## [1]  0.2930213 -0.9317725  0.7146926  1.0847815 -0.3590111
+## [1]  0.5963772  0.0199078 -0.2987396  0.6370319 -0.1734159
 ## 
 ## [[4]]
-## [1]  1.0868821  0.3742296 -0.1203691  0.6621838  0.7873993
+## [1]  0.8927477  0.7520537  0.9812914  0.3499974 -0.2164268
 ## 
 ## [[5]]
-## [1] 2.387143 2.049034 3.115525 3.356637 3.183547</code></pre>
+## [1] 2.903652 2.384806 2.474332 3.260592 1.792901</code></pre>
 <p>Creates a list of lists. For each iteration, the iteration value is the mean and 5 values are computed with <code>rnorm</code></p>
 <pre class="r"><code>map_dbl(-2:2, rnorm, n = 5)</code></pre>
 <pre><code>## Error: Result 1 is not a length 1 atomic vector</code></pre>
@@ -412,39 +419,39 @@ mu %&gt;%
   map(rnorm, n = 5) %&gt;% 
   str()</code></pre>
 <pre><code>## List of 3
-##  $ : num [1:5] 4.84 4.61 5.35 2.78 5.13
-##  $ : num [1:5] 10.06 9.45 10.66 9.26 9.33
-##  $ : num [1:5] -4.72 -2.44 -1.69 -2 -3.27</code></pre>
+##  $ : num [1:5] 4.83 5.93 4.43 4.08 6.49
+##  $ : num [1:5] 7.63 11.29 10.49 8.45 10.81
+##  $ : num [1:5] -3.36 -3.6 -1.83 -3.13 -2.01</code></pre>
 <pre class="r"><code>sigma &lt;- list(1, 5, 10)
 seq_along(mu) %&gt;% 
   map(~rnorm(5, mu[[.]], sigma[[.]])) %&gt;% 
   str()</code></pre>
 <pre><code>## List of 3
-##  $ : num [1:5] 5.55 4.84 4.96 4.72 6.68
-##  $ : num [1:5] 9.08 10.71 18.27 9.29 12.02
-##  $ : num [1:5] -13.15 6.14 6.97 -5.42 -3.36</code></pre>
+##  $ : num [1:5] 4.93 4.04 5.38 5.29 4.36
+##  $ : num [1:5] 18.44 6.44 7.36 13.16 8.24
+##  $ : num [1:5] 12.014 -7.456 4.052 -11.694 -0.767</code></pre>
 <pre class="r"><code>map2(mu, sigma, rnorm, n = 5) %&gt;% str()</code></pre>
 <pre><code>## List of 3
-##  $ : num [1:5] 5.04 6.26 5.27 4.74 4.37
-##  $ : num [1:5] 5.36 5.78 19.58 16.87 19.23
-##  $ : num [1:5] -4.91 -12.59 -18.82 -12.95 -1.95</code></pre>
+##  $ : num [1:5] 6.06 4.95 5.51 2.89 5
+##  $ : num [1:5] 8.39 13.8 10.79 6.46 3.8
+##  $ : num [1:5] 1.31 2.17 -8.9 -4.85 10.1</code></pre>
 <pre class="r"><code>n &lt;- list(1, 3, 5)
 args1 &lt;- list(n, mu, sigma)
 args1 %&gt;%
   pmap(rnorm) %&gt;% 
   str()</code></pre>
 <pre><code>## List of 3
-##  $ : num 2.4
-##  $ : num [1:3] 1.52 13.52 6.55
-##  $ : num [1:5] -2.37 -8.35 -18.82 4.17 -18.9</code></pre>
+##  $ : num 4.97
+##  $ : num [1:3] 15.73 4.53 8.31
+##  $ : num [1:5] -2.56 -13.45 -9.3 -4.41 -23.16</code></pre>
 <pre class="r"><code>args2 &lt;- list(mean = mu, sd = sigma, n = n)
 args2 %&gt;% 
   pmap(rnorm) %&gt;% 
   str()</code></pre>
 <pre><code>## List of 3
-##  $ : num 4.01
-##  $ : num [1:3] 9.6 13.3 12
-##  $ : num [1:5] -12.41 -3.28 -6.35 -14.75 0.5</code></pre>
+##  $ : num 4.55
+##  $ : num [1:3] 6.31 6.85 9.72
+##  $ : num [1:5] -6.82 -3.06 -4.14 12.57 -18.25</code></pre>
 <pre class="r"><code>params &lt;- tribble(
   ~mean, ~sd, ~n,
     5,     1,  1,
@@ -455,13 +462,13 @@ args2 %&gt;%
 params %&gt;% 
   pmap(rnorm)</code></pre>
 <pre><code>## [[1]]
-## [1] 3.25673
+## [1] 3.933924
 ## 
 ## [[2]]
-## [1] 20.921107  7.031186  5.472159
+## [1]  8.442945 15.825636  5.572163
 ## 
 ## [[3]]
-## [1] -5.007294  9.560081 10.690328 -1.108353 12.513695</code></pre>
+## [1]  -3.2844901  -7.6397370 -13.9598453  -0.4595376 -13.0150214</code></pre>
 <div id="invoking-different-functions" class="section level3">
 <h3>21.7.1 Invoking different functions</h3>
 <pre class="r"><code>f &lt;- c(&quot;runif&quot;, &quot;rnorm&quot;, &quot;rpois&quot;)
@@ -481,23 +488,29 @@ str(param)</code></pre>
 ##   ..$ lambda: num 10</code></pre>
 <pre class="r"><code>invoke_map(f, param, n = 5) %&gt;% str()</code></pre>
 <pre><code>## List of 3
-##  $ : num [1:5] -0.972 -0.0128 -0.5232 -0.8891 0.637
-##  $ : num [1:5] 3.19 7.83 -3.25 -4.03 3.34
-##  $ : int [1:5] 11 14 15 7 11</code></pre>
+##  $ : num [1:5] 0.783 -0.981 -0.659 -0.402 0.363
+##  $ : num [1:5] -10.491 6.72 0.47 -0.809 -6.379
+##  $ : int [1:5] 14 10 14 7 7</code></pre>
 <pre class="r"><code>sim &lt;- tribble(
   ~f,      ~params,
   &quot;runif&quot;, list(min = -1, max = 1),
   &quot;rnorm&quot;, list(sd = 5),
   &quot;rpois&quot;, list(lambda = 10)
 )
-sim %&gt;% 
-  mutate(sim = invoke_map(f, params, n = 10))</code></pre>
-<pre><code>## # A tibble: 3 x 3
-##       f     params        sim
-##   &lt;chr&gt;     &lt;list&gt;     &lt;list&gt;
-## 1 runif &lt;list [2]&gt; &lt;dbl [10]&gt;
-## 2 rnorm &lt;list [1]&gt; &lt;dbl [10]&gt;
-## 3 rpois &lt;list [1]&gt; &lt;int [10]&gt;</code></pre>
+a &lt;- sim %&gt;% 
+  mutate(sim = invoke_map(f, params, n = 10))
+
+a$sim</code></pre>
+<pre><code>## [[1]]
+##  [1] -0.9098007 -0.5183318 -0.1306019  0.7825903 -0.1334209  0.8367082
+##  [7] -0.4840650 -0.9351799  0.9929407  0.5960245
+## 
+## [[2]]
+##  [1] -5.3992162 -3.2136828  5.8508299  1.8026740  5.1137108  1.2761075
+##  [7] -9.5331718  5.1557713 -6.8874118 -0.7550584
+## 
+## [[3]]
+##  [1]  7  9  8 14 17 12 12  6 11 14</code></pre>
 </div>
 </div>
 <div id="walk" class="section level2">
@@ -550,19 +563,19 @@ x %&gt;%
 <pre><code>## [1] FALSE</code></pre>
 <pre class="r"><code>x &lt;- sample(10)
 x</code></pre>
-<pre><code>##  [1]  7  6  2 10  8  1  9  4  3  5</code></pre>
+<pre><code>##  [1]  5  3  7  6  1  8  2 10  4  9</code></pre>
 <pre class="r"><code>x %&gt;% 
   detect(~ . &gt; 5)</code></pre>
 <pre><code>## [1] 7</code></pre>
 <pre class="r"><code>x %&gt;% 
   detect_index(~ . &gt; 5)</code></pre>
-<pre><code>## [1] 1</code></pre>
+<pre><code>## [1] 3</code></pre>
 <pre class="r"><code>x %&gt;% 
   head_while(~ . &gt; 5)</code></pre>
-<pre><code>## [1] 7 6</code></pre>
+<pre><code>## integer(0)</code></pre>
 <pre class="r"><code>x %&gt;% 
   tail_while(~ . &gt; 5)</code></pre>
-<pre><code>## integer(0)</code></pre>
+<pre><code>## [1] 9</code></pre>
 </div>
 <div id="reduce-and-accumulate" class="section level3">
 <h3>21.9.2 Reduce and accumulate</h3>
@@ -590,9 +603,9 @@ vs %&gt;% reduce(intersect)</code></pre>
 <pre><code>## [1]  1  3 10</code></pre>
 <pre class="r"><code>x &lt;- sample(10)
 x</code></pre>
-<pre><code>##  [1]  5  2  6  8  7  9  4  1  3 10</code></pre>
+<pre><code>##  [1] 10  9  8  5  7  1  2  4  3  6</code></pre>
 <pre class="r"><code>x %&gt;% accumulate(`+`)</code></pre>
-<pre><code>##  [1]  5  7 13 21 28 37 41 42 45 55</code></pre>
+<pre><code>##  [1] 10 19 27 32 39 40 42 46 49 55</code></pre>
 </div>
 <div id="exercises-1" class="section level3">
 <h3>21.9.3 Exercises</h3>
@@ -675,10 +688,15 @@ col_summary(iris, median)</code></pre>
 <li>A possible base R equivalent of <code>col_summary()</code> is:</li>
 </ol>
 <pre class="r"><code>col_summary3 &lt;- function(df, f) {
-  is_num &lt;- sapply(df, is.numeric)
+  is_num &lt;- sapply(df[0], is.numeric)
   df_num &lt;- df[, is_num]
 
   sapply(df_num, f)
+}
+
+col_summary4 &lt;- function(df, f, ...) {
+  df_num &lt;- keep(df, is.numeric)
+  map_dbl(df_num, f, ...)
 }</code></pre>
 <p>But it has a number of bugs as illustrated with the following inputs:</p>
 <pre class="r"><code>df &lt;- tibble(
@@ -688,15 +706,12 @@ col_summary(iris, median)</code></pre>
 )
 # OK
 col_summary3(df, mean)</code></pre>
-<pre><code>## x y 
-## 2 2</code></pre>
+<pre><code>## Error: Unsupported index type: list</code></pre>
 <pre class="r"><code># Has problems: don't always return numeric vector
 col_summary3(df[1:2], mean)</code></pre>
-<pre><code>## x y 
-## 2 2</code></pre>
+<pre><code>## Error: Unsupported index type: list</code></pre>
 <pre class="r"><code>col_summary3(df[1], mean)</code></pre>
-<pre><code>## x 
-## 2</code></pre>
+<pre><code>## Error: Unsupported index type: list</code></pre>
 <pre class="r"><code>col_summary3(df[0], mean)</code></pre>
 <pre><code>## Error: Unsupported index type: list</code></pre>
 <pre class="r"><code>df2 &lt;- df[0]
