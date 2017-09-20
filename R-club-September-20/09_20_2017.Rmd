@@ -115,6 +115,8 @@ sim_models <- function(){
   y = x * 1.5 + 6 + rt(length(x), df = 2)
 )
 
+best <- optim(c(0, 0), measure_distance, data = sim1)
+  
 ggplot(sim1a, aes(x, y)) + 
   geom_point(size = 2, colour = "grey30") + 
   geom_abline(intercept = best$par[1], slope = best$par[2])
