@@ -1,0 +1,405 @@
+---
+title: "09_27_2017"
+author: "John D."
+date: "September 26, 2017"
+output: 
+  html_document: 
+    keep_md: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, error = TRUE)
+```
+
+# 23 Model basics
+
+### 23.1.1 Prerequisites
+
+```{r}
+library(tidyverse)
+
+library(modelr)
+options(na.action = na.warn)
+sim1_mod <- lm(y ~ x, data = sim1)
+```
+
+## 23.3 Visualising models
+
+### 23.3.1 Predictions
+
+```{r}
+grid <- sim1 %>% 
+  data_grid(x) 
+grid
+
+sim1_mod <- lm(y ~ x, data = sim1)
+
+grid <- grid %>% 
+  add_predictions(sim1_mod) 
+grid
+
+ggplot(sim1, aes(x)) +
+  geom_point(aes(y = y)) +
+  geom_line(aes(y = pred), data = grid, colour = "blue", size = 1)
+
+```
+
+### 23.3.2 Residuals
+
+```{r}
+sim1 <- sim1 %>% 
+  add_residuals(sim1_mod)
+sim1
+
+ggplot(sim1, aes(resid)) + 
+  geom_freqpoly(binwidth = 0.5)
+
+ggplot(sim1, aes(x, resid)) + 
+  geom_ref_line(h = 0) +
+  geom_point() 
+```
+
+### 23.3.3 Exercises
+
+1. Instead of using `lm()` to fit a straight line, you can use `loess()` to fit a smooth curve. Repeat the process of model fitting, grid generation, predictions, and visualisation on `sim1` using `loess()` instead of `lm()`. How does the result compare to `geom_smooth()`?
+
+```{r}
+rm(sim1)
+
+grid <- sim1 %>% 
+  data_grid(x) 
+grid
+
+sim1_mod_a <- lm(y ~ x, data = sim1)
+sim1_mod_b <- loess(y ~ x, data = sim1)
+
+
+grid <- grid %>% 
+  add_predictions(sim1_mod_a, var = "lm")
+grid <- grid %>% 
+  add_predictions(sim1_mod_b, var = "loess")
+grid
+
+# plot
+
+ggplot(sim1, aes(x)) +
+  geom_point(aes(y = y)) +
+  geom_line(aes(y = lm), data = grid, colour = "red", size = 1) +
+  geom_line(aes(y = loess), data = grid, colour = "blue", size = 1)
+
+ggplot(sim1, aes(x)) +
+  geom_point(aes(y = y)) +
+  geom_line(aes(y = lm), data = grid, colour = "red", size = 1) +
+  geom_line(aes(y = loess), data = grid, colour = "darkblue", size = 3) +
+  geom_line(aes(y = y), colour = "orange", size = 1) +
+  geom_smooth(aes(y = y), colour = "lightblue", size = 1)
+
+# redo with functions listed in problem 2
+
+grid <- sim1 %>% 
+  data_grid(x) 
+grid
+
+sim1_lm <- lm(y ~ x, data = sim1)
+sim1_loess <- loess(y ~ x, data = sim1)
+
+grid <- grid %>% gather_predictions(sim1_lm,sim1_loess)
+grid
+
+ggplot(sim1, aes(x)) +
+  geom_point(aes(y = y)) +
+  geom_line(aes(y = pred, color = model), data = grid, size = 1)
+
+```
+
+`geom_smooth()` fits a line using the model method 'loess'. They overlap
+
+2. `add_predictions()` is paired with `gather_predictions()` and `spread_predictions()`. How do these three functions differ?
+
+All work on a data frame. `add_prediction()` adds a single new column, default name 'pred', to the input data frame. `spread_predictions()` adds one column for each model. `gather_prections()` adds two columns .model and .pred, and repeats the input rows for each model. `gather_prections()` very useful for visualizing multiple lines on the same plot with labels.
+
+```{r}
+df <- tibble::data_frame(
+  x = sort(runif(100)),
+  y = 5 * x + 0.5 * x ^ 2 + 3 + rnorm(length(x))
+)
+plot(df)
+
+m1 <- lm(y ~ x, data = df)
+grid <- data.frame(x = seq(0, 1, length = 10))
+grid %>% add_predictions(m1)
+
+m2 <- lm(y ~ poly(x, 2), data = df)
+grid %>% spread_predictions(m1, m2)
+grid %>% gather_predictions(m1, m2)
+```
+
+3. What does `geom_ref_line()` do? What package does it come from? Why is displaying a reference line in plots showing residuals useful and important?
+
+Add a reference line. From the modelr package, but modifies ggplot objects. Displaying a reference line in plots showing residuals is usefuly because it gives you a reference for how far from 0 the residuals are.
+
+4. Why might you want to look at a frequency polygon of absolute residuals? What are the pros and cons compared to looking at the raw residuals?
+
+Gives you a better overall view of how the model is performing. By doing so you lose information on if the model is over or under predicting.
+
+## 23.4 Formulas and model families
+
+```{r}
+df <- tribble(
+  ~y, ~x1, ~x2,
+  4, 2, 5,
+  5, 1, 6
+)
+
+model_matrix(df, y ~ x1)
+
+model_matrix(df, y ~ x1 - 1)
+
+model_matrix(df, y ~ x1 + x2)
+
+```
+
+### 23.4.1 Categorical variables
+
+```{r}
+df <- tribble(
+  ~ sex, ~ response,
+  "male", 1,
+  "female", 2,
+  "male", 1
+)
+
+model_matrix(df, response ~ sex)
+
+ggplot(sim2) + 
+  geom_point(aes(x, y))
+
+mod2 <- lm(y ~ x, data = sim2)
+
+grid <- sim2 %>% 
+  data_grid(x) %>% 
+  add_predictions(mod2)
+grid
+
+ggplot(sim2, aes(x)) + 
+  geom_point(aes(y = y)) +
+  geom_point(data = grid, aes(y = pred), colour = "red", size = 4)
+
+tibble(x = "e") %>% 
+  add_predictions(mod2)
+```
+
+### 23.4.2 Interactions (continuous and categorical)
+
+```{r}
+sim3
+ggplot(sim3, aes(x1, y)) + 
+  geom_point(aes(colour = x2))
+
+mod1 <- lm(y ~ x1 + x2, data = sim3)
+mod2 <- lm(y ~ x1 * x2, data = sim3)
+
+grid <- sim3 %>% 
+  data_grid(x1, x2) %>% 
+  gather_predictions(mod1, mod2)
+grid
+
+ggplot(sim3, aes(x1, y, colour = x2)) + 
+  geom_point() + 
+  geom_line(data = grid, aes(y = pred)) + 
+  facet_wrap(~ model)
+
+sim3 <- sim3 %>% 
+  gather_residuals(mod1, mod2)
+
+ggplot(sim3, aes(x1, resid, colour = x2)) + 
+  geom_point() + 
+  facet_grid(model ~ x2)
+```
+
+### 23.4.3 Interactions (two continuous)
+
+```{r}
+mod1 <- lm(y ~ x1 + x2, data = sim4)
+mod2 <- lm(y ~ x1 * x2, data = sim4)
+
+grid <- sim4 %>% 
+  data_grid(
+    x1 = seq_range(x1, 5), 
+    x2 = seq_range(x2, 5) 
+  ) %>% 
+  gather_predictions(mod1, mod2)
+grid
+
+seq_range(c(0.0123, 0.923423), n = 5)
+
+seq_range(c(0.0123, 0.923423), n = 5, pretty = TRUE)
+
+x1 <- rcauchy(100)
+seq_range(x1, n = 5)
+
+seq_range(x1, n = 5, trim = 0.10)
+
+seq_range(x1, n = 5, trim = 0.25)
+
+seq_range(x1, n = 5, trim = 0.50)
+
+x2 <- c(0, 1)
+seq_range(x2, n = 5)
+
+seq_range(x2, n = 5, expand = 0.10)
+
+seq_range(x2, n = 5, expand = 0.25)
+
+seq_range(x2, n = 5, expand = 0.50)
+
+ggplot(grid, aes(x1, x2)) + 
+  geom_tile(aes(fill = pred)) + 
+  facet_wrap(~ model)
+
+ggplot(grid, aes(x1, pred, colour = x2, group = x2)) + 
+  geom_line() +
+  facet_wrap(~ model)
+
+ggplot(grid, aes(x2, pred, colour = x1, group = x1)) + 
+  geom_line() +
+  facet_wrap(~ model)
+```
+
+### 23.4.4 Transformations
+
+```{r}
+df <- tribble(
+  ~y, ~x,
+   1,  1,
+   2,  2, 
+   3,  3
+)
+model_matrix(df, y ~ x^2 + x)
+
+model_matrix(df, y ~ I(x^2) + x)
+
+model_matrix(df, y ~ poly(x, 2))
+
+library(splines)
+model_matrix(df, y ~ ns(x, 2))
+
+sim5 <- tibble(
+  x = seq(0, 3.5 * pi, length = 50),
+  y = 4 * sin(x) + rnorm(length(x))
+)
+sim5
+
+ggplot(sim5, aes(x, y)) +
+  geom_point()
+
+mod1 <- lm(y ~ ns(x, 1), data = sim5)
+mod2 <- lm(y ~ ns(x, 2), data = sim5)
+mod3 <- lm(y ~ ns(x, 3), data = sim5)
+mod4 <- lm(y ~ ns(x, 4), data = sim5)
+mod5 <- lm(y ~ ns(x, 5), data = sim5)
+
+grid <- sim5 %>% 
+  data_grid(x = seq_range(x, n = 50, expand = 0.1)) %>% 
+  gather_predictions(mod1, mod2, mod3, mod4, mod5, .pred = "y")
+grid
+
+ggplot(sim5, aes(x, y)) + 
+  geom_point() +
+  geom_line(data = grid, colour = "red") +
+  facet_wrap(~ model)
+```
+
+### 23.4.5 Exercises
+
+1. What happens if you repeat the analysis of `sim2` using a model without an intercept. What happens to the model equation? What happens to the predictions?
+```{r}
+
+model_matrix(df, y ~ x)
+model_matrix(df, y ~ x - 1)
+
+ggplot(sim2) + 
+  geom_point(aes(x, y))
+mod1 <- lm(y ~ x, data = sim2)
+mod2 <- lm(y ~ x - 1, data = sim2)
+
+mod1
+mod2
+grid <- sim2 %>% 
+  data_grid(x) %>% 
+  gather_predictions(mod1,mod2)
+grid
+
+ggplot(sim2, aes(x)) + 
+  geom_point(aes(y = y)) +
+  geom_point(data = grid, aes(y = pred), colour = "red", size = 4) +
+  facet_wrap(~model)
+```
+
+Nothing really changed. Intercept did not make a difference, at least in my case
+
+2. Use `model_matrix()` to explore the equations generated for the models I fit to `sim3` and `sim4`. Why is `*` a good shorthand for interaction?
+
+```{r}
+model_matrix(y ~ x1 + x2, data = sim3)
+model_matrix(y ~ x1 * x2, data = sim3)
+model_matrix(y ~ x1 + x2, data = sim4)
+model_matrix(y ~ x1 * x2, data = sim4)
+```
+
+It would be a pain to write out the whole equation explicitly
+
+3. Using the basic principles, convert the formulas in the following two models into functions. (Hint: start by converting the categorical variable into 0-1 variables.)
+
+```{r}
+mod1 <- lm(y ~ x1 + x2, data = sim3)
+mod2 <- lm(y ~ x1 * x2, data = sim3)
+mod1
+mod2
+
+mod1 = a_0 + a_1 * is_a + a_2 * is_b + a_3 * is_c + a_4 * is_d
+mod2 = a_0 + a_1 * x1 + a_2 * x2 + a_12 * x1 * x2
+# Unsure about mod 2. I feel like it's going to be long.
+```
+
+4. For `sim4`, which of `mod1` and `mod2` is better? I think `mod2` does a slightly better job at removing patterns, but it’s pretty subtle. Can you come up with a plot to support my claim?
+
+```{r}
+sim4
+sim4 <- sim4 %>% 
+  gather_residuals(mod1, mod2)
+sim4
+
+ggplot(sim4, aes(x1, resid)) + 
+  geom_point() + 
+  facet_grid(model ~ x2)
+
+ggplot(sim4, aes(x1, resid)) + 
+  geom_point() + 
+  facet_grid(~model)
+
+ggplot(sim4, aes(resid)) + 
+  geom_freqpoly(binwidth = 0.5) +
+  facet_grid(~model)
+```
+mod2 has a nicer looking freqpoly. More centered. I'm not good at statistics.
+
+## 23.5 Missing values
+
+```{r}
+df <- tribble(
+  ~x, ~y,
+  1, 2.2,
+  2, NA,
+  3, 3.5,
+  4, 8.3,
+  NA, 10
+)
+
+mod <- lm(y ~ x, data = df)
+
+mod <- lm(y ~ x, data = df, na.action = na.exclude)
+nobs(mod)
+```
+
+## 23.6 Other model families
