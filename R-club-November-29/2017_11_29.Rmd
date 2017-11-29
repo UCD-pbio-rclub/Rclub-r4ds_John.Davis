@@ -112,7 +112,7 @@ Yes, cars which are newer have better mpg. Also cars with less cylinders have be
 ```{r}
 library(MASS)
 #Now the data set is contained in the object Boston.
-Boston
+#Boston
 #Read about the data set:
 #?Boston
 ```
