@@ -1,0 +1,183 @@
+---
+title: "2017_11_29"
+author: "John D."
+date: "November 29, 2017"
+output: 
+  html_document: 
+    keep_md: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+2. Explain whether each scenario is a classification or regression problem,and indicate whether we are most interested in inference or prediction. Finally, provide n and p.
+
+(a) We collect a set of data on the top 500 firms in the US. For each firm we record profit, number of employees, industry and the CEO salary. We are interested in understanding which factors affect CEO salary.
+
+Regression, inference, n = 500, p = (profit, # of employees, industry)
+
+(b) We are considering launching a new product and wish to know whether it will be a success or a failure. We collect data on 20 similar products that were previously launched. For each product we have recorded whether it was a success or failure, price charged for the product, marketing budget, competition price, and ten other variables.
+
+Classification, prediction, n = 20, p = (price charged for the product, marketing budget, competition price, and ten other variables)
+
+(c) We are interest in predicting the % change in the USD/Euro exchange rate in relation to the weekly changes in the world stock markets. Hence we collect weekly data for all of 2012. For each week we record the % change in the USD/Euro, the % change in the US market, the % change in the British market, and the % change in the German market.
+
+Regression, prediction, n = 52, p = (the % change in the US market, the % change in the British market, and the % change in the German market)
+
+7. The table below provides a training data set containing six observations, three predictors, and one qualitative response variable. Suppose we wish to use this data set to make a prediction for Y when
+X1 = X2 = X3 = 0 using K-nearest neighbors.
+
+```{r}
+library(fields)
+mat <- matrix(c(0,2,0,0,-1,1,3,0,1,1,0,1,0,0,3,2,1,1,"Red","Red","Red","Green","Green","Red"), nrow = 6)
+```
+
+(a) Compute the Euclidean distance between each observation and the test point, X1 = X2 = X3 = 0.
+
+```{r}
+unknown <- matrix(c(0,0,0,NA), nrow = 1)
+combined <- rbind(mat,unknown)
+combined
+dist(combined)
+```
+
+(b) What is our prediction with K = 1? Why?
+
+Green because observation 5 is the closest.
+
+(c) What is our prediction with K = 3? Why?
+
+Red because 2 neighbors are Red and one is Green
+
+(d) If the Bayes decision boundary in this problem is highly nonlinear, then would we expect the best value for K to be large or small? Why?
+
+A smaller value of K is better. With a larger K the Bayes decision boundary becomes more linear, which is not what we want.
+
+9. This exercise involves the Auto data set studied in the lab. Make surethat the missing values have been removed from the data
+
+```{r}
+library(ISLR)
+Auto <- Auto
+summary(Auto)
+```
+
+(a) Which of the predictors are quantitative, and which are qualitative?
+
+Quantitative: mpg, displacement, horsepower, weight, acceleration
+Qualitative: cylinders, year, origin, name
+
+(b) What is the range of each quantitative predictor? You can answer this using the range() function.
+```{r}
+quant <- c("mpg", "displacement", "horsepower", "weight", "acceleration")
+sapply(quant, function(x) range(Auto[,x]))
+```
+
+(c) What is the mean and standard deviation of each quantitative
+predictor?
+
+```{r}
+sapply(quant, function(x) summary(Auto[,x]))
+sapply(quant, function(x) mean(Auto[,x]))
+sapply(quant, function(x) sd(Auto[,x]))
+```
+
+(d) Now remove the 10th through 85th observations. What is the
+range, mean, and standard deviation of each predictor in the
+subset of the data that remains?
+
+```{r}
+small_auto <- Auto[-(10:85),]
+sapply(quant, function(x) range(small_auto[,x]))
+sapply(quant, function(x) mean(small_auto[,x]))
+sapply(quant, function(x) sd(small_auto[,x]))
+```
+
+(e) Using the full data set, investigate the predictors graphically, using scatterplots or other tools of your choice. Create some plots highlighting the relationships among the predictors. Comment on your findings
+
+```{r}
+plot(Auto$cylinders, Auto$mpg)
+plot(Auto$horsepower, Auto$acceleration)
+plot(Auto$year, Auto$mpg)
+```
+
+(f) Suppose that we wish to predict gas mileage (mpg) on the basis of the other variables. Do your plots suggest that any of the other variables might be useful in predicting mpg? Justify your answer.
+
+Yes, cars which are newer have better mpg. Also cars with less cylinders have better mpg.
+
+10. This exercise involves the Boston housing data set.
+
+(a) To begin, load in the Boston data set. The Boston data set is part of the MASS library in R.
+
+```{r}
+library(MASS)
+#Now the data set is contained in the object Boston.
+Boston
+#Read about the data set:
+#?Boston
+```
+
+How many rows are in this data set? How many columns? What do the rows and columns represent?
+```{r}
+dim(Boston)
+head(Boston)
+```
+
+Each observation is a suburb of Boston and each column is a measurement of different properties of the surburbs.
+
+Make some pairwise scatterplots of the predictors (columns) in this data set. Describe your findings.
+
+```{r}
+plot(Boston$crim, Boston$medv)
+plot(Boston$age, Boston$medv)
+plot(Boston$rm, Boston$medv)
+```
+
+(c) Are any of the predictors associated with per capita crime rate? If so, explain the relationship.
+
+Crime rates are higher in places where houses are on average cheaper.
+
+(d) Do any of the suburbs of Boston appear to have particularly high crime rates? Tax rates? Pupil-teacher ratios? Comment on the range of each predictor.
+
+```{r}
+range(Boston$crim)
+hist(Boston$crim)
+range(Boston$tax)
+hist(Boston$tax)
+range(Boston$ptratio)
+hist(Boston$ptratio)
+```
+
+The distribution of crime does not look unusual. The distribution of tax has has 2 peaks. Pupils to teachers is majority high with some some that are almost half the average.
+
+(e) How many of the suburbs in this data set bound the Charles river?
+
+```{r}
+sum(Boston$chas == 1)
+```
+
+(f) What is the median pupil-teacher ratio among the towns in this data set?
+
+```{r}
+median(Boston[Boston$chas == 1,]$ptratio)
+```
+
+(g) Which suburb of Boston has lowest median value of owneroccupied homes? What are the values of the other predictors for that suburb, and how do those values compare to the overall ranges for those predictors? Comment on your findings.
+
+```{r}
+lowest <- Boston[which(Boston$medv == min(Boston$medv)),]
+lowest
+```
+
+There are 2 suburbs which are tied for the lowest median value of owneroccupied home. They have higher than average crime, are older houses, and high student to teacher ratios.
+
+(h) In this data set, how many of the suburbs average more than seven rooms per dwelling? More than eight rooms per dwelling? Comment on the suburbs that average more than eight rooms per dwelling.
+
+```{r}
+sum(Boston$rm > 7)
+sum(Boston$rm > 8)
+big <- Boston[Boston$rm > 8,]
+summary(big)
+```
+
+The suburbs have a lower crime rate, a higher property value, and majority white.

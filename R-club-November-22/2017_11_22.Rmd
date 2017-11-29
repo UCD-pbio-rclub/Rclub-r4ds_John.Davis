@@ -32,8 +32,7 @@ knitr::opts_chunk$set(echo = TRUE, error = T)
 Would be better. Since we have a large sample size and few predictors a more flexible method may be able to better represent the population
 
 
-(b) The number of predictors p is extremely large, and the number
-of observations n is small.
+(b) The number of predictors p is extremely large, and the number of observations n is small.
 
 Would be worse. With such few observations and and many predictors the model may overfitted
 
