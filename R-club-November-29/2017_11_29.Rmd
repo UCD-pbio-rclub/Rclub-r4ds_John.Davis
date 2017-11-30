@@ -39,7 +39,7 @@ mat <- matrix(c(0,2,0,0,-1,1,3,0,1,1,0,1,0,0,3,2,1,1,"Red","Red","Red","Green","
 unknown <- matrix(c(0,0,0,NA), nrow = 1)
 combined <- rbind(mat,unknown)
 combined
-dist(combined)
+dist(combined[,1:3])
 ```
 
 (b) What is our prediction with K = 1? Why?
